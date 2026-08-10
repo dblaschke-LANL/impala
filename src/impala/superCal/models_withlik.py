@@ -62,7 +62,7 @@ class AbstractModel:
     # @profile
     def llik(
         self, yobs, pred, cov, wt
-    ):  # assumes diagonal cov, added for compatibility with _v2
+    ):  # assumes diagonal cov
         vec = yobs.flatten() - pred.flatten()
         vec2 = vec * vec * cov["inv"]
         out = ((-0.5 * cov["ldet"] - 0.5 * vec2) * wt).sum()
@@ -110,7 +110,7 @@ class ModelmvBayes(AbstractModel):
         """
         if not FDASRSF_AVAILABLE:
             raise ValueError(
-                "Module 'fdasrsf' not available. ModelmvBayes_mf cannot proceed"
+                "Module 'fdasrsf' not available. ModelmvBayes cannot proceed"
             )
         self.mod = bmod
         self.bmod_mf = bmod_mf

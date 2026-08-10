@@ -568,11 +568,11 @@ def calibClust(setup, parallel=False):
             marg_lik_cov_curr[i][t] = [None] * setup.ntheta[i]
             s2_stretched = log_s2[i][0][t, setup.s2_ind[i]]
             for j in range(setup.ntheta[i]):
-                marg_lik_cov_curr[i][t][j] = setup.models[i].lik_cov_inv_v2(
+                marg_lik_cov_curr[i][t][j] = setup.models[i].lik_cov_inv(
                     np.exp(s2_stretched[theta_which_mat[i][j]]),
                     s2_which_mat[i][j],
                 )
-                llik_curr_theta[i][t][j] = setup.models[i].llik_v2(
+                llik_curr_theta[i][t][j] = setup.models[i].llik(
                     setup.ys[i][theta_which_mat[i][j]],
                     pred_curr_theta[i][t][theta_which_mat[i][j]],
                     marg_lik_cov_curr[i][t][j],
@@ -603,7 +603,7 @@ def calibClust(setup, parallel=False):
             s2_stretched = log_s2[i][0][t, setup.s2_ind[i]]
             for j in range(setup.ntheta[i]):
                 for k in range(setup.nclustmax):
-                    llik_curr_delta[i][t][k][j] = setup.models[i].llik_v2(
+                    llik_curr_delta[i][t][k][j] = setup.models[i].llik(
                         setup.ys[i][theta_which_mat[i][j]],
                         pred_curr_delta[i][t][k][theta_which_mat[i][j]],
                         marg_lik_cov_curr[i][t][j],
@@ -736,7 +736,7 @@ def calibClust(setup, parallel=False):
             )  # update after delta update before
             for t in range(setup.ntemps):
                 for j in range(setup.ntheta[i]):
-                    llik_curr_theta[i][t][j] = setup.models[i].llik_v2(
+                    llik_curr_theta[i][t][j] = setup.models[i].llik(
                         setup.ys[i][theta_which_mat[i][j]],
                         pred_curr_theta[i][t][theta_which_mat[i][j]],
                         marg_lik_cov_curr[i][t][j],
@@ -774,7 +774,7 @@ def calibClust(setup, parallel=False):
             )
             for t in range(setup.ntemps):
                 for j in range(setup.ntheta[i]):
-                    llik_cand_theta[i][t][j] = setup.models[i].llik_v2(
+                    llik_cand_theta[i][t][j] = setup.models[i].llik(
                         setup.ys[i][theta_which_mat[i][j]],
                         pred_cand_theta[i][t][theta_which_mat[i][j]],
                         marg_lik_cov_curr[i][t][j],
@@ -853,11 +853,11 @@ def calibClust(setup, parallel=False):
                     for j in range(setup.ntheta[i]):
                         marg_lik_cov_curr[i][t][j] = setup.models[
                             i
-                        ].lik_cov_inv_v2(
+                        ].lik_cov_inv(
                             np.exp(s2_stretched[theta_which_mat[i][j]]),
                             s2_which_mat[i][j],
                         )
-                        llik_curr_theta[i][t][j] = setup.models[i].llik_v2(
+                        llik_curr_theta[i][t][j] = setup.models[i].llik(
                             setup.ys[i][theta_which_mat[i][j]],
                             pred_curr_theta[i][t][theta_which_mat[i][j]],
                             marg_lik_cov_curr[i][t][j],
@@ -943,11 +943,11 @@ def calibClust(setup, parallel=False):
                     for j in range(setup.ntheta[i]):
                         marg_lik_cov_curr[i][t][j] = setup.models[
                             i
-                        ].lik_cov_inv_v2(
+                        ].lik_cov_inv(
                             np.exp(s2_stretched[theta_which_mat[i][j]]),
                             s2_which_mat[i][j],
                         )
-                        llik_curr_theta[i][t][j] = setup.models[i].llik_v2(
+                        llik_curr_theta[i][t][j] = setup.models[i].llik(
                             setup.ys[i][theta_which_mat[i][j]],
                             pred_curr_theta[i][t][theta_which_mat[i][j]],
                             marg_lik_cov_curr[i][t][j],
@@ -962,7 +962,7 @@ def calibClust(setup, parallel=False):
                     for j in range(setup.ntheta[i]):
                         marg_lik_cov_curr[i][t][j] = setup.models[
                             i
-                        ].lik_cov_inv_v2(
+                        ].lik_cov_inv(
                             np.exp(s2_stretched[s2_which_mat[i][j]]),
                             s2_which_mat[i][j],
                         )
@@ -1062,7 +1062,7 @@ def calibClust(setup, parallel=False):
             for t in range(setup.ntemps):
                 for j in range(setup.ntheta[i]):
                     for k in range(setup.nclustmax):
-                        llik_curr_delta[i][t][k][j] = setup.models[i].llik_v2(
+                        llik_curr_delta[i][t][k][j] = setup.models[i].llik(
                             setup.ys[i][theta_which_mat[i][j]],
                             pred_curr_delta[i][t][k][theta_which_mat[i][j]],
                             marg_lik_cov_curr[i][t][j],

@@ -858,11 +858,11 @@ def calibHier(setup):
             marg_lik_cov_curr[i][t] = [None] * setup.ntheta[i]
             s2_stretched = log_s2[i][0][t, setup.s2_ind[i]]
             for j in range(setup.ntheta[i]):
-                marg_lik_cov_curr[i][t][j] = setup.models[i].lik_cov_inv_v2(
+                marg_lik_cov_curr[i][t][j] = setup.models[i].lik_cov_inv(
                     np.exp(s2_stretched[theta_which_mat[i][j]]),
                     s2_which_mat[i][j],
                 )
-                llik_curr[i][t][j] = setup.models[i].llik_v2(
+                llik_curr[i][t][j] = setup.models[i].llik(
                     setup.ys[i][theta_which_mat[i][j]],
                     pred_curr[i][t][theta_which_mat[i][j]],
                     marg_lik_cov_curr[i][t][j],
@@ -971,7 +971,7 @@ def calibHier(setup):
                 )
                 for t in range(setup.ntemps):
                     for j in range(setup.ntheta[i]):
-                        llik_curr[i][t][j] = setup.models[i].llik_v2(
+                        llik_curr[i][t][j] = setup.models[i].llik(
                             setup.ys[i][theta_which_mat[i][j]],
                             pred_curr[i][t][theta_which_mat[i][j]],
                             marg_lik_cov_curr[i][t][j],
@@ -1019,7 +1019,7 @@ def calibHier(setup):
 
             for t in range(setup.ntemps):
                 for j in range(setup.ntheta[i]):
-                    llik_cand[i][t][j] = setup.models[i].llik_v2(
+                    llik_cand[i][t][j] = setup.models[i].llik(
                         setup.ys[i][theta_which_mat[i][j]],
                         pred_cand[i][t][theta_which_mat[i][j]],
                         marg_lik_cov_curr[i][t][j],
@@ -1095,11 +1095,11 @@ def calibHier(setup):
                     for j in range(setup.ntheta[i]):
                         marg_lik_cov_curr[i][t][j] = setup.models[
                             i
-                        ].lik_cov_inv_v2(
+                        ].lik_cov_inv(
                             np.exp(s2_stretched[theta_which_mat[i][j]]),
                             s2_which_mat[i][j],
                         )
-                        llik_curr[i][t][j] = setup.models[i].llik_v2(
+                        llik_curr[i][t][j] = setup.models[i].llik(
                             setup.ys[i][theta_which_mat[i][j]],
                             pred_curr[i][t][theta_which_mat[i][j]],
                             marg_lik_cov_curr[i][t][j],
@@ -1187,11 +1187,11 @@ def calibHier(setup):
                     for j in range(setup.ntheta[i]):
                         marg_lik_cov_curr[i][t][j] = setup.models[
                             i
-                        ].lik_cov_inv_v2(
+                        ].lik_cov_inv(
                             np.exp(s2_stretched[theta_which_mat[i][j]]),
                             s2_which_mat[i][j],
                         )
-                        llik_curr[i][t][j] = setup.models[i].llik_v2(
+                        llik_curr[i][t][j] = setup.models[i].llik(
                             setup.ys[i][theta_which_mat[i][j]],
                             pred_curr[i][t][theta_which_mat[i][j]],
                             marg_lik_cov_curr[i][t][j],
@@ -1229,7 +1229,7 @@ def calibHier(setup):
                     for j in range(setup.ntheta[i]):
                         marg_lik_cov_candi[t][j] = setup.models[
                             i
-                        ].lik_cov_inv_v2(
+                        ].lik_cov_inv(
                             np.exp(ls2_candi[t, setup.s2_ind[i]])[
                                 setup.s2_ind[i] == j
                             ],
@@ -1370,7 +1370,7 @@ def calibHier(setup):
                     )  # .reshape(setup.ntemps, setup.ntheta[i], setup.y_lens[i])
                     for t in range(setup.ntemps):
                         for j in range(setup.ntheta[i]):
-                            llik_cand[i][t][j] = setup.models[i].llik_v2(
+                            llik_cand[i][t][j] = setup.models[i].llik(
                                 setup.ys[i][theta_which_mat[i][j]],
                                 pred_cand[i][t][theta_which_mat[i][j]],
                                 marg_lik_cov_curr[i][t][j],
@@ -1638,7 +1638,7 @@ def calibPool(setup):
     for i in range(setup.nexp):
         marg_lik_cov_curr[i] = [None] * setup.ntemps
         for t in range(setup.ntemps):
-            marg_lik_cov_curr[i][t] = setup.models[i].lik_cov_inv_v2(
+            marg_lik_cov_curr[i][t] = setup.models[i].lik_cov_inv(
                 np.exp(log_s2[i][0, t, setup.s2_ind[i]])[setup.s2_ind[i]],
                 setup.s2_ind[i],
             )
@@ -1653,7 +1653,7 @@ def calibPool(setup):
         # sse_curr[:, i] = np.sum((pred_curr[i] - setup.ys[i]) ** 2 / s2_vec_curr[i].T, 1)
         # ((pred_curr[i] - setup.ys[i])**2 @ s2_ind_mat[i] / s2[i][0]).sum(axis = 1)
         for t in range(setup.ntemps):
-            llik_curr[i, t] = setup.models[i].llik_v2(
+            llik_curr[i, t] = setup.models[i].llik(
                 setup.ys[i], pred_curr[i][t], marg_lik_cov_curr[i][t], wt_mat[i]
             )
 
@@ -1712,7 +1712,7 @@ def calibPool(setup):
             log_s2[i][m] = log_s2[i][m - 1].copy()
             if setup.models[i].nd > 0:  # update discrepancy
                 for t in range(setup.ntemps):
-                    discrep_vars[i][m][t] = setup.models[i].discrep_sample_v2(
+                    discrep_vars[i][m][t] = setup.models[i].discrep_sample(
                         setup.ys[i],
                         pred_curr[i][t],
                         marg_lik_cov_curr[i][t],
@@ -1731,7 +1731,7 @@ def calibPool(setup):
                 )
             if setup.models[i].nd > 0 or setup.models[i].stochastic:
                 for t in range(setup.ntemps):
-                    llik_curr[i, t] = setup.models[i].llik_v2(
+                    llik_curr[i, t] = setup.models[i].llik(
                         setup.ys[i] - discrep_curr[i][t],
                         pred_curr[i][t],
                         marg_lik_cov_curr[i][t],
@@ -1766,7 +1766,7 @@ def calibPool(setup):
                     pool=True,
                 )
                 for t in range(setup.ntemps):
-                    llik_cand[i, t] = setup.models[i].llik_v2(
+                    llik_cand[i, t] = setup.models[i].llik(
                         setup.ys[i] - discrep_curr[i][t],
                         pred_cand[i][t],
                         marg_lik_cov_curr[i][t],
@@ -1822,7 +1822,7 @@ def calibPool(setup):
                             pool=True,
                         )
                         for t in range(setup.ntemps):
-                            llik_cand[i, t] = setup.models[i].llik_v2(
+                            llik_cand[i, t] = setup.models[i].llik(
                                 setup.ys[i] - discrep_curr[i][t],
                                 pred_cand[i][t],
                                 marg_lik_cov_curr[i][t],
@@ -1874,11 +1874,11 @@ def calibPool(setup):
                             ).astype("float64"),
                         ).astype("float64")
                     )
-                    marg_lik_cov_curr[i][t] = setup.models[i].lik_cov_inv_v2(
+                    marg_lik_cov_curr[i][t] = setup.models[i].lik_cov_inv(
                         np.exp(log_s2[i][m][t])[setup.s2_ind[i]],
                         setup.s2_ind[i],
                     )
-                    llik_curr[i, t] = setup.models[i].llik_v2(
+                    llik_curr[i, t] = setup.models[i].llik(
                         setup.ys[i] - discrep_curr[i][t],
                         pred_curr[i][t],
                         marg_lik_cov_curr[i][t],
@@ -1960,11 +1960,11 @@ def calibPool(setup):
                                 <= np.log(setup.sd_upper[i] ** 2)
                             )
 
-                    marg_lik_cov_curr[i][t] = setup.models[i].lik_cov_inv_v2(
+                    marg_lik_cov_curr[i][t] = setup.models[i].lik_cov_inv(
                         np.exp(log_s2[i][m][t])[setup.s2_ind[i]],
                         setup.s2_ind[i],
                     )
-                    llik_curr[i, t] = setup.models[i].llik_v2(
+                    llik_curr[i, t] = setup.models[i].llik(
                         setup.ys[i] - discrep_curr[i][t],
                         pred_curr[i][t],
                         marg_lik_cov_curr[i][t],
@@ -1987,10 +1987,10 @@ def calibPool(setup):
                 llik_candi = np.zeros(setup.ntemps)
                 marg_lik_cov_candi = [None] * setup.ntemps
                 for t in range(setup.ntemps):
-                    marg_lik_cov_candi[t] = setup.models[i].lik_cov_inv_v2(
+                    marg_lik_cov_candi[t] = setup.models[i].lik_cov_inv(
                         np.exp(ls2_candi[t])[setup.s2_ind[i]], setup.s2_ind[i]
                     )
-                    llik_candi[t] = setup.models[i].llik_v2(
+                    llik_candi[t] = setup.models[i].llik(
                         setup.ys[i] - discrep_curr[i][t],
                         pred_curr[i][t],
                         marg_lik_cov_candi[t],

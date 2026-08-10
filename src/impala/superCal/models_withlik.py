@@ -734,7 +734,7 @@ class ModelF(AbstractModel):
             return np.apply_along_axis(self.mod, 1, parmat_array)
         else:
             # nrep = list(parmat.values())[0].shape[0] // self.nexp
-            nrep = next(iter(parmat.values())) // self.nexp
+            nrep = next(iter(parmat.values())).shape[0] // self.nexp
             self.out_all = self.mod(parmat_array)
             # self.out_all = self.mod(next(iter(parmat.values())))
             self.res_array = np.zeros([nrep, len(self.exp_ind)])

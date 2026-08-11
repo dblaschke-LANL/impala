@@ -10,6 +10,7 @@
 
 import time
 from collections import namedtuple
+from collections import defaultdict
 from math import floor, log, sqrt
 from multiprocessing import Pool
 
@@ -34,7 +35,6 @@ np.seterr(under="ignore")
 ###############################################################
 ### CalibSetup Class for Initializing the Calibration Model ###
 ###############################################################
-from collections import defaultdict
 
 
 def is_valid_mapping(theta_inds, s2_inds):
@@ -102,6 +102,8 @@ class CalibSetup:
         self.ig_a = []
         self.ig_b = []
         self.wt = []
+        self.sd_lower=[]
+        self.sd_upper=[]
         self.s2_ind = []
         self.s2_exp_ind = []
         self.ns2 = []
@@ -809,7 +811,7 @@ def calibHier(setup):
                 ])
             )
             != 1
-        ) and ("gibbs" in setup.models[i].s2 == "gibbs"):
+        ) and ("gibbs" in setup.models[i].s2):
             setup.models[i].s2 = "MH"
             print(
                 "Gibbs sampling for s2 only valid if weights are the same for all observations with same s2. Reverting to MH. "

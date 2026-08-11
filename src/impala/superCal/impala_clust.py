@@ -118,36 +118,37 @@ def one_step_in_cluster_covariance_update(Sj, mSj, nSj, n, mus, covs):
     return Sj, mSj, nSj
 
 
-def cluster_covariance_update_old(
-    S, mS, nS, n, delta, covs, mus, nexp, nclustmax, temps
-):
-    """
-    S, m, n -- modified in place
-    Goal is cluster-level covariance matrix
-    input:
-        means [i]x[ntemps, ns2[i], p],
-        covs  [i]x[ntemps, ns2[i], p, p],
-        delta [i]x[ntemps, ns2[i]]
-    output:
-        S     [ntemps, nclustmax, p, p]
-    """
-    S[:] = np.eye(S.shape[-1]) * 1e-9
-    mS[:] = 0.0
-    nS[:] = 0.0
-    for i in range(nexp):
-        for j in range(delta[i].shape[1]):
-            (
-                S[temps, delta[i].T[j]],
-                mS[temps, delta[i].T[j]],
-                nS[temps, delta[i].T[j]],
-            ) = one_step_in_cluster_covariance_update(
-                S[temps, delta[i].T[j]],
-                mS[temps, delta[i].T[j]],
-                nS[temps, delta[i].T[j]],
-                n,
-                mus[i][temps, j],
-                covs[i][temps, j],
-            )
+## this old fct seems not to be used anymore; remove?
+# def cluster_covariance_update_old(
+#     S, mS, nS, n, delta, covs, mus, nexp, nclustmax, temps
+# ):
+#     """
+#     S, m, n -- modified in place
+#     Goal is cluster-level covariance matrix
+#     input:
+#         means [i]x[ntemps, ns2[i], p],
+#         covs  [i]x[ntemps, ns2[i], p, p],
+#         delta [i]x[ntemps, ns2[i]]
+#     output:
+#         S     [ntemps, nclustmax, p, p]
+#     """
+#     S[:] = np.eye(S.shape[-1]) * 1e-9
+#     mS[:] = 0.0
+#     nS[:] = 0.0
+#     for i in range(nexp):
+#         for j in range(delta[i].shape[1]):
+#             (
+#                 S[temps, delta[i].T[j]],
+#                 mS[temps, delta[i].T[j]],
+#                 nS[temps, delta[i].T[j]],
+#             ) = one_step_in_cluster_covariance_update(
+#                 S[temps, delta[i].T[j]],
+#                 mS[temps, delta[i].T[j]],
+#                 nS[temps, delta[i].T[j]],
+#                 n,
+#                 mus[i][temps, j],
+#                 covs[i][temps, j],
+#             )
 
 
 # West 1992, dirichletprocess R package
@@ -366,7 +367,7 @@ OutCalibClust = namedtuple(
 ### - estimation of separate s2 values within an experiment
 ### - passing indices to loglik
 ### - add truncated gibbs sampling for measurement errors
-def calibClust(setup, parallel=False):
+def calibClust(setup, parallel=False): ## kw parallel is not used, but maybe keep for backwards compatibility?
     """
     Clustered calibration with expanded capabilities, still undergoing testing.
     Some changes include:, allowing weights, allowing custom initializations, changing initial theta0 defaults,
@@ -983,7 +984,7 @@ def calibClust(setup, parallel=False):
             + theta0_prior_prec,
         )
         tbar[:] = (
-            theta[m] * theta_ext.reshape(setup.ntemps, setup.nclustmax, 1)
+            theta[m] * theta_ext.reshape((setup.ntemps, setup.nclustmax, 1))
         ).sum(axis=1)
         tbar[:] /= ntheta.reshape(setup.ntemps, 1)
         dd[:] = +np.einsum(
@@ -1010,11 +1011,11 @@ def calibClust(setup, parallel=False):
             setup.itl,
             (
                 (theta[m] - theta0[m].reshape(setup.ntemps, 1, setup.p))
-                * theta_ext.reshape(setup.ntemps, setup.nclustmax, 1)
+                * theta_ext.reshape((setup.ntemps, setup.nclustmax, 1))
             ),
             (
                 (theta[m] - theta0[m].reshape(setup.ntemps, 1, setup.p))
-                * theta_ext.reshape(setup.ntemps, setup.nclustmax, 1)
+                * theta_ext.reshape((setup.ntemps, setup.nclustmax, 1))
             ),
         )
         Sigma0_scales[:] = Sigma0_prior_scale + mat

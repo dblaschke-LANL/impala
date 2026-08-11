@@ -430,13 +430,16 @@ def chol_sample_nper(means, covs, n):
 
 
 def chol_sample_1per_constraints(
-    means, covs, cf, bounds_mat, bounds_keys, bounds, consts
+    means, covs, cf, bounds_mat, bounds_keys, bounds, consts, maxiter=1000000
 ):
     """Sample with constraints.  If fail constraints, resample."""
     chols = cholesky(covs)
     cand = means + np.einsum("ijk,ik->ij", chols, normal(size=means.shape))
     good = cf(tran_unif(cand, bounds_mat, bounds_keys), bounds, consts)
+    i=1
     while np.any(np.logical_not(good)):
+        if i>maxiter:
+            raise ValueError(f"Failed to find samples that fulfill the constraints after {maxiter} iterations.")
         cand[np.where(np.logical_not(good))] = +means[
             np.logical_not(good)
         ] + np.einsum(
@@ -448,6 +451,7 @@ def chol_sample_1per_constraints(
             tran_unif(cand[np.logical_not(good)], bounds_mat, bounds_keys),
             bounds,
         )
+        i += 1
     return cand
 
 

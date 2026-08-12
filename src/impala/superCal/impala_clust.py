@@ -409,8 +409,7 @@ def calibClust(setup, parallel=False): ## kw parallel is not used, but maybe kee
     else:
         theta0_start = initfunc_unif(size=[setup.ntemps, setup.p])
         good = setup.checkConstraints(
-            tran_unif(theta0_start, setup.bounds_mat, setup.bounds.keys()),
-            setup.bounds,
+            tran_unif(theta0_start, setup.bounds_mat, setup.bounds.keys())
         )
         while np.any(np.logical_not(good)):
             theta0_start[np.where(np.logical_not(good))] = initfunc_unif(
@@ -421,8 +420,7 @@ def calibClust(setup, parallel=False): ## kw parallel is not used, but maybe kee
                     theta0_start[np.where(np.logical_not(good))],
                     setup.bounds_mat,
                     setup.bounds.keys(),
-                ),
-                setup.bounds,
+                )
             )
     theta0[0] = theta0_start
 

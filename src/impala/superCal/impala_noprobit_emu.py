@@ -784,8 +784,7 @@ def calibHier(setup):
     else:
         theta0_start = initfunc_unif(size=[setup.ntemps, setup.p])
         good = setup.checkConstraints(
-            tran_unif(theta0_start, setup.bounds_mat, setup.bounds.keys()),
-            setup.bounds,
+            tran_unif(theta0_start, setup.bounds_mat, setup.bounds.keys())
         )
         while np.any(np.logical_not(good)):
             theta0_start[np.where(np.logical_not(good))] = initfunc_unif(
@@ -796,8 +795,7 @@ def calibHier(setup):
                     theta0_start[np.where(np.logical_not(good))],
                     setup.bounds_mat,
                     setup.bounds.keys(),
-                ),
-                setup.bounds,
+                )
             )
     theta0[0] = theta0_start
     Sigma0[0] = setup.Sigma0_prior_scale / (
@@ -1004,10 +1002,7 @@ def calibHier(setup):
             )
             # Check constraints
             good_values_mat[i][:] = setup.checkConstraints(
-                tran_unif(
-                    theta_cand_mat[i], setup.bounds_mat, setup.bounds.keys()
-                ),
-                setup.bounds,
+                tran_unif(theta_cand_mat[i], setup.bounds_mat, setup.bounds.keys())
             )
             good_values[i][:] = good_values_mat[i].reshape(
                 setup.ntemps, setup.ntheta[i]
@@ -1353,8 +1348,7 @@ def calibHier(setup):
                             theta_cand_mat[i],
                             setup.bounds_mat,
                             setup.bounds.keys(),
-                        ),
-                        setup.bounds,
+                        )
                     )
                     # Generate predictions at "good" candidate values
                     theta_eval_mat[i][good_values_mat[i]] = theta_cand_mat[i][
@@ -1589,20 +1583,18 @@ def calibPool(setup):
     ]
     theta_start0 = initfunc_unif(size=[setup.ntemps, setup.p])
     good = setup.checkConstraints(
-        tran_unif(theta_start0, setup.bounds_mat, setup.bounds.keys()),
-        setup.bounds,
+        tran_unif(theta_start0, setup.bounds_mat, setup.bounds.keys())
     )
-    while np.any(~good):
-        theta_start0[np.where(~good)] = initfunc_unif(
-            size=[(~good).sum(), setup.p]
+    while np.any(np.logical_not(good)):
+        theta_start0[np.where(np.logical_not(good))] = initfunc_unif(
+            size=[(np.logical_not(good)).sum(), setup.p]
         )
-        good[np.where(~good)] = setup.checkConstraints(
+        good[np.where(np.logical_not(good))] = setup.checkConstraints(
             tran_unif(
-                theta_start0[np.where(~good)],
+                theta_start0[np.where(np.logical_not(good))],
                 setup.bounds_mat,
                 setup.bounds.keys(),
-            ),
-            setup.bounds,
+            )
         )
     theta[0] = theta_start0
 
@@ -1806,10 +1798,7 @@ def calibPool(setup):
                     size=setup.ntemps
                 )  # independence proposal, will vectorize of columns
                 good_values = setup.checkConstraints(
-                    tran_unif(
-                        theta_cand, setup.bounds_mat, setup.bounds.keys()
-                    ),
-                    setup.bounds,
+                    tran_unif(theta_cand, setup.bounds_mat, setup.bounds.keys())
                 )
                 pred_cand = [_.copy() for _ in pred_curr]
                 llik_cand[:] = llik_curr.copy()

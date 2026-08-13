@@ -880,7 +880,7 @@ def build_z_models(cfg, dat_z, temps_z, edots_z, pooled: bool):
     return models_z, z_stress
 
 
-def constraints_ptw_basic(x, bounds, consts=None, *args):
+def constraints_ptw_basic(x, bounds, consts=None):
     good = (
         (x["sInf"] < x["s0"])
         * (x["yInf"] < x["y0"])

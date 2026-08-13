@@ -60,9 +60,7 @@ class AbstractModel:
         pass
 
     # @profile
-    def llik(
-        self, yobs, pred, cov, wt
-    ):  # assumes diagonal cov
+    def llik(self, yobs, pred, cov, wt):  # assumes diagonal cov
         vec = yobs.flatten() - pred.flatten()
         vec2 = vec * vec * cov["inv"]
         out = ((-0.5 * cov["ldet"] - 0.5 * vec2) * wt).sum()

@@ -324,8 +324,6 @@ OutCalibClust = namedtuple(
 ## DP Cluster Calibration
 
 
-
-
 ### The following is an updated version of calibClust with expanded capabilities
 ### This is a breaking change, so I created a new function. Some key changes include:
 ### - allowing experiment weights
@@ -334,7 +332,9 @@ OutCalibClust = namedtuple(
 ### - estimation of separate s2 values within an experiment
 ### - passing indices to loglik
 ### - add truncated gibbs sampling for measurement errors
-def calibClust(setup, parallel=False): ## kw parallel is not used, but maybe keep for backwards compatibility?
+def calibClust(
+    setup, parallel=False
+):  ## kw parallel is not used, but maybe keep for backwards compatibility?
     """
     Clustered calibration with expanded capabilities, still undergoing testing.
     Some changes include:, allowing weights, allowing custom initializations, changing initial theta0 defaults,

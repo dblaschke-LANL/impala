@@ -97,8 +97,8 @@ class CalibSetup:
         self.ig_a = []
         self.ig_b = []
         self.wt = []
-        self.sd_lower=[]
-        self.sd_upper=[]
+        self.sd_lower = []
+        self.sd_upper = []
         self.s2_ind = []
         self.s2_exp_ind = []
         self.ns2 = []
@@ -430,16 +430,20 @@ def chol_sample_1per_constraints(
     """
     Sample with constraints.  If fail constraints, resample.
     """
-    assert isinstance(bounds, dict), "please update your script calling chol_sample_1per_constraints(means, covs, cf, bounds, consts)!"
+    assert isinstance(bounds, dict), (
+        "please update your script calling chol_sample_1per_constraints(means, covs, cf, bounds, consts)!"
+    )
     bounds_keys = bounds.keys()
     bounds_mat = np.array(list(bounds.values()))
     chols = cholesky(covs)
     cand = means + np.einsum("ijk,ik->ij", chols, normal(size=means.shape))
     good = cf(tran_unif(cand, bounds_mat, bounds_keys), bounds, consts)
-    i=1
+    i = 1
     while np.any(np.logical_not(good)):
-        if i>maxiter:
-            raise ValueError(f"Failed to find samples that fulfill the constraints after {maxiter} iterations.")
+        if i > maxiter:
+            raise ValueError(
+                f"Failed to find samples that fulfill the constraints after {maxiter} iterations."
+            )
         cand[np.where(np.logical_not(good))] = +means[
             np.logical_not(good)
         ] + np.einsum(
@@ -459,7 +463,9 @@ def chol_sample_nper_constraints(
     means, covs, n, cf, bounds, consts, maxiter=1000000
 ):
     """Sample with constraints.  If fail constraints, resample."""
-    assert isinstance(bounds, dict), "please update your script calling chol_sample_1per_constraints(means, covs, cf, bounds, consts)!"
+    assert isinstance(bounds, dict), (
+        "please update your script calling chol_sample_1per_constraints(means, covs, cf, bounds, consts)!"
+    )
     bounds_keys = bounds.keys()
     bounds_mat = np.array(list(bounds.values()))
     chols = cholesky(covs)
@@ -468,10 +474,12 @@ def chol_sample_nper_constraints(
     )
     for i in range(cand.shape[0]):
         goodi = cf(tran_unif(cand[i], bounds_mat, bounds_keys), bounds, consts)
-        j=0
+        j = 0
         while np.any(np.logical_not(goodi)):
-            if j>maxiter:
-                raise ValueError(f"Failed to find samples that fulfill the constraints after {maxiter} iterations.")
+            if j > maxiter:
+                raise ValueError(
+                    f"Failed to find samples that fulfill the constraints after {maxiter} iterations."
+                )
             cand[i, np.where(np.logical_not(goodi))[0]] = +means[i] + np.einsum(
                 "ik,nk->ni",
                 chols[i],
@@ -1007,7 +1015,9 @@ def calibHier(setup):
             )
             # Check constraints
             good_values_mat[i][:] = setup.checkConstraints(
-                tran_unif(theta_cand_mat[i], setup.bounds_mat, setup.bounds.keys())
+                tran_unif(
+                    theta_cand_mat[i], setup.bounds_mat, setup.bounds.keys()
+                )
             )
             good_values[i][:] = good_values_mat[i].reshape(
                 setup.ntemps, setup.ntheta[i]
@@ -1233,9 +1243,7 @@ def calibHier(setup):
                 for t in range(setup.ntemps):
                     marg_lik_cov_candi[t] = [None] * setup.ntheta[i]
                     for j in range(setup.ntheta[i]):
-                        marg_lik_cov_candi[t][j] = setup.models[
-                            i
-                        ].lik_cov_inv(
+                        marg_lik_cov_candi[t][j] = setup.models[i].lik_cov_inv(
                             np.exp(ls2_candi[t, setup.s2_ind[i]])[
                                 setup.s2_ind[i] == j
                             ],

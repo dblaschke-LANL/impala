@@ -906,7 +906,11 @@ def parameter_trace_plot(sample_parameters, ylim=None, parameter_names=None):
             ax = plt.gca()
             if ylim is not None:
                 ax.set_ylim(ylim)
-            ax.set_ylabel(parameter_names[i])
+            if i<d-1:
+                ax.tick_params(axis='x', labelbottom=False)
+            if parameter_names[i]!="":
+                ax.set_ylabel(parameter_names[i],rotation=0,labelpad=20,ha="right",va="center")
+    plt.subplots_adjust(hspace=0.4) 
     #    plt.show()
 
 

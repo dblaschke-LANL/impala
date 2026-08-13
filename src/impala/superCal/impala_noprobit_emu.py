@@ -9,8 +9,7 @@
 ###############
 
 import time
-from collections import namedtuple
-from collections import defaultdict
+from collections import defaultdict, namedtuple
 from math import floor, log, sqrt
 from multiprocessing import Pool
 
@@ -433,7 +432,7 @@ def chol_sample_1per_constraints(
     """
     assert isinstance(bounds, dict), "please update your script calling chol_sample_1per_constraints(means, covs, cf, bounds, consts)!"
     bounds_keys = bounds.keys()
-    bounds_mat = bounds_mat = np.array(list(bounds.values()))
+    bounds_mat = np.array(list(bounds.values()))
     chols = cholesky(covs)
     cand = means + np.einsum("ijk,ik->ij", chols, normal(size=means.shape))
     good = cf(tran_unif(cand, bounds_mat, bounds_keys), bounds, consts)
@@ -462,7 +461,7 @@ def chol_sample_nper_constraints(
     """Sample with constraints.  If fail constraints, resample."""
     assert isinstance(bounds, dict), "please update your script calling chol_sample_1per_constraints(means, covs, cf, bounds, consts)!"
     bounds_keys = bounds.keys()
-    bounds_mat = bounds_mat = np.array(list(bounds.values()))
+    bounds_mat = np.array(list(bounds.values()))
     chols = cholesky(covs)
     cand = means.reshape(means.shape[0], 1, means.shape[1]) + np.einsum(
         "ijk,ink->inj", chols, normal(size=(means.shape[0], n, means.shape[1]))

@@ -1,4 +1,4 @@
-import multiprocessing as mp
+# import multiprocessing as mp
 import time
 from collections import namedtuple
 from math import sqrt
@@ -116,39 +116,6 @@ def one_step_in_cluster_covariance_update(Sj, mSj, nSj, n, mus, covs):
     mSj[:] = mC
     nSj[:] = nC
     return Sj, mSj, nSj
-
-
-## this old fct seems not to be used anymore; remove?
-# def cluster_covariance_update_old(
-#     S, mS, nS, n, delta, covs, mus, nexp, nclustmax, temps
-# ):
-#     """
-#     S, m, n -- modified in place
-#     Goal is cluster-level covariance matrix
-#     input:
-#         means [i]x[ntemps, ns2[i], p],
-#         covs  [i]x[ntemps, ns2[i], p, p],
-#         delta [i]x[ntemps, ns2[i]]
-#     output:
-#         S     [ntemps, nclustmax, p, p]
-#     """
-#     S[:] = np.eye(S.shape[-1]) * 1e-9
-#     mS[:] = 0.0
-#     nS[:] = 0.0
-#     for i in range(nexp):
-#         for j in range(delta[i].shape[1]):
-#             (
-#                 S[temps, delta[i].T[j]],
-#                 mS[temps, delta[i].T[j]],
-#                 nS[temps, delta[i].T[j]],
-#             ) = one_step_in_cluster_covariance_update(
-#                 S[temps, delta[i].T[j]],
-#                 mS[temps, delta[i].T[j]],
-#                 nS[temps, delta[i].T[j]],
-#                 n,
-#                 mus[i][temps, j],
-#                 covs[i][temps, j],
-#             )
 
 
 # West 1992, dirichletprocess R package

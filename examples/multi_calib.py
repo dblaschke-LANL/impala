@@ -1185,8 +1185,6 @@ def save_draws_hier(
         out.theta0[:, 0],
         out.Sigma0[:, 0],
         setup.checkConstraints,
-        setup.bounds_mat,
-        setup.bounds.keys(),
         setup.bounds,
         setup.models[0].constants,
     )

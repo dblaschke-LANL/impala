@@ -497,8 +497,6 @@ def calibClust(setup, parallel=False): ## kw parallel is not used, but maybe kee
             Sigma0[0],
             setup.nclustmax,
             setup.checkConstraints,
-            setup.bounds_mat,
-            setup.bounds.keys(),
             setup.bounds,
             setup.constants,
         )
@@ -994,8 +992,6 @@ def calibClust(setup, parallel=False): ## kw parallel is not used, but maybe kee
             np.einsum("tlk,tk->tl", cc, dd),
             cc,
             setup.checkConstraints,
-            setup.bounds_mat,
-            setup.bounds.keys(),
             setup.bounds,
             setup.constants,
         )
@@ -1033,8 +1029,6 @@ def calibClust(setup, parallel=False): ## kw parallel is not used, but maybe kee
             Sigma0[m],
             setup.nclustmax,
             setup.checkConstraints,
-            setup.bounds_mat,
-            setup.bounds.keys(),
             setup.bounds,
             setup.constants,
         )

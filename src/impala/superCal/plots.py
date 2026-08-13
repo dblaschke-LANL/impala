@@ -112,8 +112,6 @@ class PTW_Plotter:
             self.out.theta0[sel, 0],
             self.out.Sigma0[sel, 0],
             self.setup.checkConstraints,
-            self.setup.bounds_mat,
-            self.setup.bounds.keys(),
             self.setup.bounds,
             self.setup.constants,
         )
@@ -533,8 +531,6 @@ class PTW_Plotter:
             self.out.theta0[sel, 0],
             self.out.Sigma0[sel, 0],
             self.setup.checkConstraints,
-            self.setup.bounds_mat,
-            self.setup.bounds.keys(),
             self.setup.bounds,
             self.setup.constants,
         )

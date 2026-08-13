@@ -22,10 +22,6 @@ from scipy.special import erf, erfinv, gammaln, multigammaln
 from scipy.stats import invwishart
 
 from ..physics import PTW_goodparam
-
-# from itertools import repeat
-# import multiprocessing as mp
-# import pandas as pd
 from .pbar import pbar
 
 np.seterr(under="ignore")
@@ -430,9 +426,14 @@ def chol_sample_nper(means, covs, n):
 
 
 def chol_sample_1per_constraints(
-    means, covs, cf, bounds_mat, bounds_keys, bounds, consts, maxiter=1000000
+    means, covs, cf, bounds, consts, maxiter=1000000
 ):
-    """Sample with constraints.  If fail constraints, resample."""
+    """
+    Sample with constraints.  If fail constraints, resample.
+    """
+    assert isinstance(bounds, dict), "please update your script calling chol_sample_1per_constraints(means, covs, cf, bounds, consts)!"
+    bounds_keys = bounds.keys()
+    bounds_mat = bounds_mat = np.array(list(bounds.values()))
     chols = cholesky(covs)
     cand = means + np.einsum("ijk,ik->ij", chols, normal(size=means.shape))
     good = cf(tran_unif(cand, bounds_mat, bounds_keys), bounds, consts)
@@ -456,16 +457,22 @@ def chol_sample_1per_constraints(
 
 
 def chol_sample_nper_constraints(
-    means, covs, n, cf, bounds_mat, bounds_keys, bounds, consts
+    means, covs, n, cf, bounds, consts, maxiter=1000000
 ):
     """Sample with constraints.  If fail constraints, resample."""
+    assert isinstance(bounds, dict), "please update your script calling chol_sample_1per_constraints(means, covs, cf, bounds, consts)!"
+    bounds_keys = bounds.keys()
+    bounds_mat = bounds_mat = np.array(list(bounds.values()))
     chols = cholesky(covs)
     cand = means.reshape(means.shape[0], 1, means.shape[1]) + np.einsum(
         "ijk,ink->inj", chols, normal(size=(means.shape[0], n, means.shape[1]))
     )
     for i in range(cand.shape[0]):
         goodi = cf(tran_unif(cand[i], bounds_mat, bounds_keys), bounds, consts)
+        j=0
         while np.any(np.logical_not(goodi)):
+            if j>maxiter:
+                raise ValueError(f"Failed to find samples that fulfill the constraints after {maxiter} iterations.")
             cand[i, np.where(np.logical_not(goodi))[0]] = +means[i] + np.einsum(
                 "ik,nk->ni",
                 chols[i],
@@ -479,6 +486,7 @@ def chol_sample_nper_constraints(
                 ),
                 bounds,
             )
+            j += 1
     return cand
 
 
@@ -841,8 +849,6 @@ def calibHier(setup):
             Sigma0[0],
             setup.ntheta[i],
             setup.checkConstraints,
-            setup.bounds_mat,
-            setup.bounds.keys(),
             setup.bounds,
             setup.constants,
         )
@@ -1292,8 +1298,6 @@ def calibHier(setup):
             np.einsum("tlk,tk->tl", cc, dd),
             cc,
             setup.checkConstraints,
-            setup.bounds_mat,
-            setup.bounds.keys(),
             setup.bounds,
             setup.constants,
         )

@@ -180,12 +180,12 @@ class ModelmvBayes(AbstractModel):
 
         return pred
 
-    def llik(self, yobs, pred, cov):
+    def llik(self, yobs, pred, cov, wt=None):
         vec = yobs - pred
         out = -0.5 * (cov["ldet"] + vec.T @ cov["inv"] @ vec)
         return out
 
-    def lik_cov_inv(self, s2vec):
+    def lik_cov_inv(self, s2vec, inds=None):
         n = len(s2vec)
         Sigma = cor2cov(
             self.meas_error_cor[:n, :n], np.sqrt(s2vec)
@@ -279,12 +279,12 @@ class ModelBassPca_mult(AbstractModel):
             )
             # this is evaluating all experiments for all thetas, which is overkill
 
-    def llik(self, yobs, pred, cov):
+    def llik(self, yobs, pred, cov, wt=None):
         vec = yobs - pred
         out = -0.5 * (cov["ldet"] + vec.T @ cov["inv"] @ vec)
         return out
 
-    def lik_cov_inv(self, s2vec):
+    def lik_cov_inv(self, s2vec, inds=None):
         n = len(s2vec)
         Sigma = cor2cov(
             self.meas_error_cor[:n, :n], np.sqrt(s2vec)
@@ -653,13 +653,13 @@ class ModelBpprPca_func(AbstractModel):
             # this is evaluating all experiments for all thetas, which is overkill
 
     # @profile
-    def llik(self, yobs, pred, cov):
+    def llik(self, yobs, pred, cov, wt=None):
         vec = yobs - pred
         out = -0.5 * (cov["ldet"] + vec.T @ cov["inv"] @ vec)
         return out
 
     # @profile
-    def lik_cov_inv(self, s2vec):
+    def lik_cov_inv(self, s2vec, inds=None):
         vec = self.trunc_error_var + s2vec
         # mat = np.diag(vec) + self.basis @ np.diag(self.emu_vars) @ self.basis.T
         # inv = np.linalg.inv(mat)

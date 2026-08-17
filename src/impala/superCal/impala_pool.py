@@ -1,6 +1,6 @@
 ####################################
 ####################################
-"""Impala Pooled calibration """
+"""Impala Pooled calibration"""
 ####################################
 ####################################
 
@@ -24,6 +24,7 @@ OutCalibPool = namedtuple(
     "OutCalibPool",
     "theta s2 count count_s2 count_decor cov_theta_cand cov_ls2_cand pred_curr discrep_vars llik theta_native",
 )
+
 
 # @profile
 def calibPool(setup):
@@ -80,7 +81,7 @@ def calibPool(setup):
                 ])
             )
             != 1
-        ) and (setup.models[i].s2=="gibbs"):
+        ) and (setup.models[i].s2 == "gibbs"):
             setup.models[i].s2 = "fix"
             print(
                 "Gibbs sampling for s2 only valid if weights are the same for all observations with same s2. Reverting to fixed s2. "
@@ -613,4 +614,3 @@ def calibPoolParallel(setup_list, ncores):
     temp = PoolCalib(setup_list)
     out = temp.fit(ncores, len(setup_list))
     return out
-

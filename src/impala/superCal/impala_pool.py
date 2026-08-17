@@ -80,7 +80,7 @@ def calibPool(setup):
                 ])
             )
             != 1
-        ) and ("gibbs" in setup.models[i].s2):
+        ) and (setup.models[i].s2=="gibbs"):
             setup.models[i].s2 = "fix"
             print(
                 "Gibbs sampling for s2 only valid if weights are the same for all observations with same s2. Reverting to fixed s2. "

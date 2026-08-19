@@ -114,7 +114,7 @@ def calibHier(setup):
                 ])
             )
             != 1
-        ) and ("gibbs" in setup.models[i].s2):
+        ) and (setup.models[i].s2 == "gibbs"):
             setup.models[i].s2 = "MH"
             print(
                 "Gibbs sampling for s2 only valid if weights are the same for all observations with same s2. Reverting to MH. "
@@ -163,6 +163,7 @@ def calibHier(setup):
             for j in range(setup.ntheta[i]):
                 marg_lik_cov_curr[i][t][j] = setup.models[i].lik_cov_inv(
                     np.exp(s2_stretched[theta_which_mat[i][j]]),
+                    wt_mat[i][theta_which_mat[i][j]],
                     s2_which_mat[i][j],
                 )
                 llik_curr[i][t][j] = setup.models[i].llik(
@@ -399,6 +400,7 @@ def calibHier(setup):
                             i
                         ].lik_cov_inv(
                             np.exp(s2_stretched[theta_which_mat[i][j]]),
+                            wt_mat[i][theta_which_mat[i][j]],
                             s2_which_mat[i][j],
                         )
                         llik_curr[i][t][j] = setup.models[i].llik(
@@ -491,6 +493,7 @@ def calibHier(setup):
                             i
                         ].lik_cov_inv(
                             np.exp(s2_stretched[theta_which_mat[i][j]]),
+                            wt_mat[i][theta_which_mat[i][j]],
                             s2_which_mat[i][j],
                         )
                         llik_curr[i][t][j] = setup.models[i].llik(
@@ -533,12 +536,14 @@ def calibHier(setup):
                             np.exp(ls2_candi[t, setup.s2_ind[i]])[
                                 setup.s2_ind[i] == j
                             ],
+                            wt_mat[i][theta_which_mat[i][j]],
                             s2_which_mat[i][j],
                         )  # s2[i][0, t, setup.s2_ind[i]])
                         llik_candi[t][j] = setup.models[i].llik(
                             setup.ys[i][setup.theta_ind[i] == j],
                             pred_curr[i][t][setup.theta_ind[i] == j],
                             marg_lik_cov_candi[t][j],
+                            wt_mat[i][theta_which_mat[i][j]],
                         )
                         # something wrong still, getting way too large of variance
                     # marg_lik_cov_candi[t] = setup.models[i].lik_cov_inv(np.exp(ls2_candi[t])[setup.s2_ind[i]])#s2[i][0, t, setup.s2_ind[i]])

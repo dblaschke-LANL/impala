@@ -63,15 +63,15 @@ class AbstractModel:
     def llik(self, yobs, pred, cov, wt):  # assumes diagonal cov
         vec = yobs.flatten() - pred.flatten()
         vec2 = vec * vec * cov["inv"]
-        out = ((-0.5 * cov["ldet"] - 0.5 * vec2) * wt).sum()
+        out = -0.5 * cov["ldet"] - 0.5 * (vec2 * wt).sum()
         return out
 
     # @profile
     def lik_cov_inv(
-        self, s2vec, inds=None
+        self, s2vec, wt, inds=None
     ):  # default is diagonal covariance matrix. Added inds argument, not needed for this implementation
         inv = 1 / s2vec
-        ldet = np.log(s2vec).sum()
+        ldet = (wt * np.log(s2vec)).sum()
         out = {"inv": inv, "ldet": ldet}
         return out
 
@@ -185,7 +185,7 @@ class ModelmvBayes(AbstractModel):
         out = -0.5 * (cov["ldet"] + vec.T @ cov["inv"] @ vec)
         return out
 
-    def lik_cov_inv(self, s2vec, inds=None):
+    def lik_cov_inv(self, s2vec, wt=None, inds=None):
         n = len(s2vec)
         Sigma = cor2cov(
             self.meas_error_cor[:n, :n], np.sqrt(s2vec)
@@ -284,7 +284,7 @@ class ModelBassPca_mult(AbstractModel):
         out = -0.5 * (cov["ldet"] + vec.T @ cov["inv"] @ vec)
         return out
 
-    def lik_cov_inv(self, s2vec, inds=None):
+    def lik_cov_inv(self, s2vec, wt=None, inds=None):
         n = len(s2vec)
         Sigma = cor2cov(
             self.meas_error_cor[:n, :n], np.sqrt(s2vec)
@@ -381,11 +381,11 @@ class ModelBpprPca_mult(AbstractModel):
 
     def llik(self, yobs, pred, cov, wt):
         vec = np.sqrt(wt) * (yobs - pred).flatten()
-        out = -0.5 * (cov["ldet"] * np.sum(wt) + vec.T @ cov["inv"] @ vec)
+        out = -0.5 * cov["ldet"] + vec.T @ cov["inv"] @ vec
         return out
 
     def lik_cov_inv(
-        self, s2vec, inds=None
+        self, s2vec, wt, inds=None
     ):  # note: I have not tested this. There may need to be changes to the inds-based subsetting!
         if inds is None:
             inds = np.arange(0, len(s2vec), 1)
@@ -402,7 +402,7 @@ class ModelBpprPca_mult(AbstractModel):
         )
         # this doesnt work for vectorized experiments...maybe dont allow those for BASS
         chol = cholesky(mat)
-        ldet = 2 * np.sum(np.log(np.diag(chol)))
+        ldet = 2 * np.sum(wt * np.log(np.diag(chol)))
         # la.dpotri(chol, overwrite_c=True) # overwrites chol with original matrix inverse
         inv = np.linalg.inv(mat)
         out = {"inv": inv, "ldet": ldet}
@@ -518,12 +518,12 @@ class ModelBassPca_func(AbstractModel):
         return out
 
     # @profile
-    def lik_cov_inv(self, s2vec, inds=None):
+    def lik_cov_inv(self, s2vec, wt, inds=None):
         if inds is None:
             inds = np.arange(0, len(s2vec), 1)
         vec = self.trunc_error_var[inds] + s2vec
         Ainv = np.diag(1 / vec)
-        Aldet = np.log(vec).sum()
+        Aldet = (wt * np.log(vec)).sum()
         out = self.swm(
             Ainv,
             self.basis[inds, :],
@@ -659,7 +659,7 @@ class ModelBpprPca_func(AbstractModel):
         return out
 
     # @profile
-    def lik_cov_inv(self, s2vec, inds=None):
+    def lik_cov_inv(self, s2vec, wt=None, inds=None):
         vec = self.trunc_error_var + s2vec
         # mat = np.diag(vec) + self.basis @ np.diag(self.emu_vars) @ self.basis.T
         # inv = np.linalg.inv(mat)
@@ -815,7 +815,7 @@ class ModelF_bigdata(AbstractModel):
             return np.apply_along_axis(self.mod, 1, parmat_array)
         else:
             # nrep = list(parmat.values())[0].shape[0] // self.nexp
-            nrep = next(iter(parmat.values())) // self.nexp
+            nrep = next(iter(parmat.values())).shape[0] // self.nexp
             self.res_array = np.zeros([nrep, len(self.exp_ind)])
             for i in range(self.nexp):
                 inds_to_run = np.ix_(
@@ -852,11 +852,11 @@ class ModelF_bigdata(AbstractModel):
         return out
 
     def lik_cov_inv(
-        self, s2vec, inds=None
+        self, s2vec, wt, inds=None
     ):  # default is diagonal covariance matrix
         vec = s2vec
         self.inv = 1 / vec
-        ldet = np.log(vec).sum()
+        ldet = (wt * np.log(vec)).sum()
         out = {"inv": self.inv, "ldet": ldet}
         return out
 

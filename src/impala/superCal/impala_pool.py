@@ -102,6 +102,7 @@ def calibPool(setup):
         for t in range(setup.ntemps):
             marg_lik_cov_curr[i][t] = setup.models[i].lik_cov_inv(
                 np.exp(log_s2[i][0, t, setup.s2_ind[i]])[setup.s2_ind[i]],
+                wt_mat[i],
                 setup.s2_ind[i],
             )
             # ask around: is list of lists lookup slow?? ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -335,6 +336,7 @@ def calibPool(setup):
                     )
                     marg_lik_cov_curr[i][t] = setup.models[i].lik_cov_inv(
                         np.exp(log_s2[i][m][t])[setup.s2_ind[i]],
+                        wt_mat[i],
                         setup.s2_ind[i],
                     )
                     llik_curr[i, t] = setup.models[i].llik(
@@ -421,6 +423,7 @@ def calibPool(setup):
 
                     marg_lik_cov_curr[i][t] = setup.models[i].lik_cov_inv(
                         np.exp(log_s2[i][m][t])[setup.s2_ind[i]],
+                        wt_mat[i],
                         setup.s2_ind[i],
                     )
                     llik_curr[i, t] = setup.models[i].llik(
@@ -447,7 +450,9 @@ def calibPool(setup):
                 marg_lik_cov_candi = [None] * setup.ntemps
                 for t in range(setup.ntemps):
                     marg_lik_cov_candi[t] = setup.models[i].lik_cov_inv(
-                        np.exp(ls2_candi[t])[setup.s2_ind[i]], setup.s2_ind[i]
+                        np.exp(ls2_candi[t])[setup.s2_ind[i]],
+                        wt_mat[i],
+                        setup.s2_ind[i],
                     )
                     llik_candi[t] = setup.models[i].llik(
                         setup.ys[i] - discrep_curr[i][t],

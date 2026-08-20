@@ -37,7 +37,7 @@ def generate_data(n_features: int, gridsize: int):
     # only the first four elements. So the remaining elements should have
     # uniform posteriors.
     # don't get too close top the bounds, pick numbers between 0.1 and 0.9:
-    theta = 0.1 + 0.8*np.random.rand(1, n_features)
+    theta = 0.1 + 0.8 * np.random.rand(1, n_features)
 
     # True observation error standard deviation.
     sigma = 0.1
@@ -106,7 +106,7 @@ def test_friedman_fit():
     # uniform.
     superfluous_theta_posterior = theta_posterior[:, num_utilized_parameters:]
     for i, theta in enumerate(superfluous_theta_posterior.T):
-        assert (pvalue:=kstest(theta, Uniform().cdf).pvalue) > 0.01, (
+        assert (pvalue := kstest(theta, Uniform().cdf).pvalue) > 0.01, (
             f"theta_{i} is not Uniform! {pvalue=}"
         )
 
@@ -114,7 +114,7 @@ def test_friedman_fit():
     # uniform.
     utilized_theta_posterior = theta_posterior[:, :num_utilized_parameters]
     for i, theta in enumerate(utilized_theta_posterior.T):
-        assert (pvalue:=kstest(theta, Uniform().cdf).pvalue) < 0.01, (
+        assert (pvalue := kstest(theta, Uniform().cdf).pvalue) < 0.01, (
             f"theta_{i} is Uniform! {pvalue=}"
         )
 

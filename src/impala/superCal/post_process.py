@@ -291,7 +291,7 @@ def ptw_prediction_plots_cluster(
     ]
 
     thetas = calib_out.theta[mcmc_use, 0]
-    [calib_out.delta[i][mcmc_use] for i in range(setup.nexp)]
+    # [calib_out.delta[i][mcmc_use] for i in range(setup.nexp)]
     nclustmax = max(calib_out.out.delta[i].max() for i in range(setup.nexp)) + 1
     dcounts = np.zeros((mcmc_use.shape[0], nclustmax))
     for it, s in enumerate(mcmc_use):
@@ -670,7 +670,7 @@ def pairwise_theta_plot_cluster(
 ):
     """Pairwise Theta scatterplot; specialized version for clustered calibration results."""
     thetas = calib_out.theta[mcmc_use, 0]
-    [calib_out.delta[i][mcmc_use] for i in range(setup.nexp)]
+    # [calib_out.delta[i][mcmc_use] for i in range(setup.nexp)]
     nclustmax = max(calib_out.delta[i].max() for i in range(setup.nexp)) + 1
     dcounts = np.zeros((mcmc_use.shape[0], nclustmax))
     for it, s in enumerate(mcmc_use):
@@ -808,7 +808,7 @@ def cluster_matrix(delta_list, ns2, nclustmax, nburn=20000, nthin=10):
     # subset delta to post burn-in
     delta_relist = [d[nburn::nthin] for d in delta_list]
     # Declare constants
-    delta_relist[0].shape[0]
+    # delta_relist[0].shape[0]
     len(delta_relist)
     # create a combined delta array (for all experiments/vectorized experiments)
     # Boolean array, so (True iff member of cluster)
@@ -834,9 +834,9 @@ def cluster_matrix_plot(setup, calib_out, path=None, **kwargs):
     )
     plt.matshow(cmat)
     if breaks.shape[0] > 1:
-        for breakpoint in breaks[1:-1] - 0.5:
-            plt.axhline(breakpoint, color="red", linestyle="--")
-            plt.axvline(breakpoint, color="green", linestyle="--")
+        for breakpnt in breaks[1:-1] - 0.5:
+            plt.axhline(breakpnt, color="red", linestyle="--")
+            plt.axvline(breakpnt, color="green", linestyle="--")
     plt.legend()
     if path:
         plt.savefig(path, bbox_inches="tight")
@@ -1061,7 +1061,7 @@ def get_bounds(edot, strain, temp, results_csv, write_path, percentiles=None):
     """
     if percentiles is None:
         percentiles = [0.05, 0.5, 0.95]
-    edot * 1e-6  # first term is per second
+    # edot * 1e-6  # first term is per second
 
     df = pd.read_csv(results_csv, nrows=1, header=None)
     mods = df.loc[0, :].values.tolist()
@@ -1111,8 +1111,10 @@ def get_bounds(edot, strain, temp, results_csv, write_path, percentiles=None):
 
 
 def get_samples_rank(edot, strain, temp, results_csv, write_path):
-    # rank parent distribution samples by stress at particular strain, strain rate, temperature, save all samples to file, for sky
-    edot * 1e-6  # first term is per second
+    """
+    rank parent distribution samples by stress at particular strain, strain rate, temperature, save all samples to file
+    """
+    # edot * 1e-6  # first term is per second
 
     df = pd.read_csv(results_csv, nrows=1, header=None)
     mods = df.loc[0, :].values.tolist()
@@ -1156,6 +1158,9 @@ def get_samples_rank(edot, strain, temp, results_csv, write_path):
 
 
 def get_best_sse(results_csv, write_path):
+    """
+    Function to get the best parameters (uses sum of squared error, sse).
+    """
     df = pd.read_csv(results_csv, skiprows=7)
     theta_parent_native = dict(zip(df.T.index, df.values.T))
     rank_sse = np.argsort(theta_parent_native["sse"])

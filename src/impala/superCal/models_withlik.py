@@ -1024,11 +1024,11 @@ class ModelMaterialStrength(AbstractModel):
         self.strain_max = self.meas_strain_max.max()
         self.nhists = sum(len(v) for v in strain_histories)
         self.model = pm_vec.MaterialModel(
-            flow_stress_model=eval("pm_vec." + flow_stress_model),
-            shear_modulus_model=eval("pm_vec." + shear_model),
-            specific_heat_model=eval("pm_vec." + specific_heat_model),
-            melt_model=eval("pm_vec." + melt_model),
-            density_model=eval("pm_vec." + density_model),
+            flow_stress_model=getattr(pm_vec , flow_stress_model),
+            shear_modulus_model=getattr(pm_vec , shear_model),
+            specific_heat_model=getattr(pm_vec , specific_heat_model),
+            melt_model=getattr(pm_vec , melt_model),
+            density_model=getattr(pm_vec , density_model),
         )
         self.model_info = [
             flow_stress_model,

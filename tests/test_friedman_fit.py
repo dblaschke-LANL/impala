@@ -36,7 +36,8 @@ def generate_data(n_features: int, gridsize: int):
     # True calibration parameter value. Note that the Friedman function uses
     # only the first four elements. So the remaining elements should have
     # uniform posteriors.
-    theta = np.random.rand(1, n_features)
+    # don't get too close top the bounds, pick numbers between 0.1 and 0.9:
+    theta = 0.1 + 0.8*np.random.rand(1, n_features)
 
     # True observation error standard deviation.
     sigma = 0.1

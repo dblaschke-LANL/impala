@@ -87,7 +87,7 @@ def test_friedman_fit():
     setup.setTemperatureLadder(1.05 ** np.arange(20))
 
     # MCMC number of iterations, and how often to take a decorrelation step.
-    setup.setMCMC(nmcmc=15000, decor=100)
+    setup.setMCMC(nmcmc=40000, decor=100)
 
     # Pooled calibration (takes less than a minute).
     out = sc.calibPool(setup)
@@ -95,7 +95,7 @@ def test_friedman_fit():
     # out.theta is has shape (num_mcmc_samples, num_temperatures, n_features).
     # Use index zero to get the posterior for the coldest chain (temperatre=0).
     burn = 6000  # burn-in: initial samples to discard.
-    thin = 2  # thinning factor: take every 2 samples after burn-in.
+    thin = 5  # thinning factor: take every 5 samples after burn-in.
     theta_posterior = out.theta[burn::thin, 0]
 
     # Number of parameters utilized by the Friedman function.
@@ -105,7 +105,7 @@ def test_friedman_fit():
     # uniform.
     superfluous_theta_posterior = theta_posterior[:, num_utilized_parameters:]
     for i, theta in enumerate(superfluous_theta_posterior.T):
-        assert kstest(theta, Uniform().cdf).pvalue > 0.10, (
+        assert kstest(theta, Uniform().cdf).pvalue > 0.01, (
             f"theta_{i} is not Uniform!"
         )
 

@@ -5,12 +5,11 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import scipy.stats as ss
 import seaborn as sns
 from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.lines import Line2D
 from scipy.interpolate import interp1d
-from scipy.stats import gaussian_kde
+from scipy.stats import gaussian_kde, rankdata
 
 from impala import superCal as sc
 
@@ -1141,7 +1140,7 @@ def get_samples_rank(edot, strain, temp, results_csv, write_path):
     stress_star = model_ptw_star.eval(theta_parent_native)[:, -1]
     ranked_post = pd.DataFrame(theta_parent_native)
     ranked_post["stress"] = stress_star
-    ranked_post["rank"] = ss.rankdata(stress_star)  # append
+    ranked_post["rank"] = rankdata(stress_star)  # append
 
     template = (
         "edot(1/s)="

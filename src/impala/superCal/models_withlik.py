@@ -844,6 +844,8 @@ class ModelF(AbstractModel):
         self.D = None
         self.s2 = s2
         self.constants = None
+        self.out_all = None
+        self.res_array = None
 
     def eval(self, parmat, pool=None, nugget=False):
         parmat_array = np.vstack([
@@ -925,6 +927,7 @@ class ModelF_bigdata(AbstractModel):
             1, 16200, 16200
         )  # define to speed up discrep_sample evaluation
         self.constants = None
+        self.res_array = None
 
     def eval(self, parmat, pool=None, nugget=False):
         parmat_array = np.vstack([

@@ -61,7 +61,6 @@ def func_prediction_plot(
     if ylim is not None:
         plt.ylim(ylim)
     if text is not None:
-        # plt.text(*text_coords, text)
         plt.text(0.1, 0.85, text, transform=plt.gca().transAxes)
     if pdf:
         pdf.savefig(fig)
@@ -290,7 +289,6 @@ def ptw_prediction_plots_cluster(
     ]
 
     thetas = calib_out.theta[mcmc_use, 0]
-    # [calib_out.delta[i][mcmc_use] for i in range(setup.nexp)]
     nclustmax = max(calib_out.out.delta[i].max() for i in range(setup.nexp)) + 1
     dcounts = np.zeros((mcmc_use.shape[0], nclustmax))
     for it, s in enumerate(mcmc_use):
@@ -563,7 +561,6 @@ def pairwise_theta_plot_pool(setup, calib_out, path, mcmc_use, alpha=0.05):
             if i == j:
                 plt.subplot2grid((setup.p, setup.p), (i, j))
                 sns.kdeplot(theta0_unst[:, i], color="blue")
-                # plt.xlim(0,1)
                 plt.xlim(setup.bounds_mat[i, 0], setup.bounds_mat[i, 1])
                 ax = plt.gca()
                 ax.axes.yaxis.set_visible(False)
@@ -586,8 +583,6 @@ def pairwise_theta_plot_pool(setup, calib_out, path, mcmc_use, alpha=0.05):
                     contour["conts"],
                     colors="blue",
                 )
-                # plt.xlim(0,1)
-                # plt.ylim(0,1)
                 plt.xlim(setup.bounds_mat[j, 0], setup.bounds_mat[j, 1])
                 plt.ylim(setup.bounds_mat[i, 0], setup.bounds_mat[i, 1])
                 ax = plt.gca()
@@ -621,7 +616,6 @@ def pairwise_theta_plot_pool_compare(
                 plt.subplot2grid((setup.p, setup.p), (i, j))
                 for k in range(n):
                     sns.kdeplot(theta0_unst_list[k][:, i], color=cols[k])
-                # plt.xlim(0,1)
                 plt.xlim(setup.bounds_mat[i, 0], setup.bounds_mat[i, 1])
                 ax = plt.gca()
                 ax.axes.yaxis.set_visible(False)
@@ -646,8 +640,6 @@ def pairwise_theta_plot_pool_compare(
                         contour_list[k]["conts"],
                         colors=cols[k],
                     )
-                # plt.xlim(0,1)
-                # plt.ylim(0,1)
                 plt.xlim(setup.bounds_mat[j, 0], setup.bounds_mat[j, 1])
                 plt.ylim(setup.bounds_mat[i, 0], setup.bounds_mat[i, 1])
                 ax = plt.gca()
@@ -669,7 +661,6 @@ def pairwise_theta_plot_cluster(
 ):
     """Pairwise Theta scatterplot; specialized version for clustered calibration results."""
     thetas = calib_out.theta[mcmc_use, 0]
-    # [calib_out.delta[i][mcmc_use] for i in range(setup.nexp)]
     nclustmax = max(calib_out.delta[i].max() for i in range(setup.nexp)) + 1
     dcounts = np.zeros((mcmc_use.shape[0], nclustmax))
     for it, s in enumerate(mcmc_use):
@@ -710,7 +701,6 @@ def pairwise_theta_plot_cluster(
             if i == j:
                 plt.subplot2grid((setup.p, setup.p), (i, j))
                 for k in range(setup.nexp):
-                    # for s in range(self.setup.ntheta[k]):
                     if highlight[k] is not None:
                         for s in highlight[k]:
                             sns.kdeplot(
@@ -718,7 +708,6 @@ def pairwise_theta_plot_cluster(
                             )
                 sns.kdeplot(theta0_unst[:, i], color="blue")
                 sns.kdeplot(theta_parent_unst[:, i], color="grey")
-                # plt.xlim(0,1)
 
                 plt.xlim(setup.bounds_mat[i, 0], setup.bounds_mat[i, 1])
 
@@ -735,7 +724,6 @@ def pairwise_theta_plot_cluster(
                 plt.subplot2grid((setup.p, setup.p), (i, j))
                 cnt = 0
                 for k in range(setup.nexp):
-                    # for s in range(self.setup.ntheta[k]):
                     if highlight[k] is not None:
                         for s in highlight[k]:
                             cnt += 1
@@ -773,8 +761,6 @@ def pairwise_theta_plot_cluster(
                     contour["conts"],
                     colors="grey",
                 )
-                # plt.xlim(0,1)
-                # plt.ylim(0,1)
 
                 plt.xlim(setup.bounds_mat[j, 0], setup.bounds_mat[j, 1])
                 plt.ylim(setup.bounds_mat[i, 0], setup.bounds_mat[i, 1])
@@ -807,8 +793,6 @@ def cluster_matrix(delta_list, ns2, nclustmax, nburn=20000, nthin=10):
     # subset delta to post burn-in
     delta_relist = [d[nburn::nthin] for d in delta_list]
     # Declare constants
-    # delta_relist[0].shape[0]
-    len(delta_relist)
     # create a combined delta array (for all experiments/vectorized experiments)
     # Boolean array, so (True iff member of cluster)
     breaks = np.hstack((0, np.cumsum(ns2)))
@@ -1060,7 +1044,6 @@ def get_bounds(edot, strain, temp, results_csv, write_path, percentiles=None):
     """
     if percentiles is None:
         percentiles = [0.05, 0.5, 0.95]
-    # edot * 1e-6  # first term is per second
 
     df = pd.read_csv(results_csv, nrows=1, header=None)
     mods = df.loc[0, :].values.tolist()
@@ -1113,8 +1096,6 @@ def get_samples_rank(edot, strain, temp, results_csv, write_path):
     """
     rank parent distribution samples by stress at particular strain, strain rate, temperature, save all samples to file
     """
-    # edot * 1e-6  # first term is per second
-
     df = pd.read_csv(results_csv, nrows=1, header=None)
     mods = df.loc[0, :].values.tolist()
 

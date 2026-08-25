@@ -806,15 +806,15 @@ def calibClust(
                                 itl_mat_s2[i][t]
                                 * (setup.ny_s2[i] / 2 + setup.ig_a[i] + 1)
                                 - 1
-                            ).astype("float64"),
+                            ),
                             (
                                 1
                                 / (
                                     itl_mat_s2[i][t]
                                     * (setup.ig_b[i] + dev_sq[t].flatten() / 2)
                                 )
-                            ).astype("float64"),
-                        ).astype("float64")
+                            ),
+                        )
                     )
                     s2_stretched = log_s2[i][m][t, setup.s2_ind[i]]
                     for j in range(setup.ntheta[i]):
@@ -844,15 +844,15 @@ def calibClust(
                                 itl_mat_s2[i][t]
                                 * (setup.ny_s2[i] / 2 + setup.ig_a[i] + 1)
                                 - 1
-                            ).astype("float64"),
+                            ),
                             (
                                 1
                                 / (
                                     itl_mat_s2[i][t]
                                     * (setup.ig_b[i] + dev_sq[t].flatten() / 2)
                                 )
-                            ).astype("float64"),
-                        ).astype("float64")
+                            ),
+                        )
                     )
                     s2_is_valid = (
                         log_s2[i][m][t] >= np.log(setup.sd_lower[i] ** 2)
@@ -871,7 +871,7 @@ def calibClust(
                                         + 1
                                     )
                                     - 1
-                                ).astype("float64"),
+                                ),
                                 (
                                     1
                                     / (
@@ -881,8 +881,8 @@ def calibClust(
                                             + dev_sq[t].flatten()[sub] / 2
                                         )
                                     )
-                                ).astype("float64"),
-                            ).astype("float64")
+                                ),
+                            )
                         )
                         s2_is_valid = (
                             log_s2[i][m][t] >= np.log(setup.sd_lower[i] ** 2)

@@ -324,15 +324,15 @@ def calibPool(setup):
                                 itl_mat[i][t]
                                 * (setup.ny_s2[i] / 2 + setup.ig_a[i] + 1)
                                 - 1
-                            ).astype("float64"),
+                            ),
                             (
                                 1
                                 / (
                                     itl_mat[i][t]
                                     * (setup.ig_b[i] + dev_sq[t].flatten() / 2)
                                 )
-                            ).astype("float64"),
-                        ).astype("float64")
+                            ),
+                        )
                     )
                     marg_lik_cov_curr[i][t] = setup.models[i].lik_cov_inv(
                         np.exp(log_s2[i][m][t])[setup.s2_ind[i]],
@@ -358,15 +358,15 @@ def calibPool(setup):
                                 itl_mat[i][t]
                                 * (setup.ny_s2[i] / 2 + setup.ig_a[i] + 1)
                                 - 1
-                            ).astype("float64"),
+                            ),
                             (
                                 1
                                 / (
                                     itl_mat[i][t]
                                     * (setup.ig_b[i] + dev_sq[t].flatten() / 2)
                                 )
-                            ).astype("float64"),
-                        ).astype("float64")
+                            ),
+                        )
                     )
                     s2_is_valid = (
                         log_s2[i][m][t] >= np.log(setup.sd_lower[i] ** 2)
@@ -385,7 +385,7 @@ def calibPool(setup):
                                         + 1
                                     )
                                     - 1
-                                ).astype("float64"),
+                                ),
                                 (
                                     1
                                     / (
@@ -395,8 +395,8 @@ def calibPool(setup):
                                             + dev_sq[t].flatten()[sub] / 2
                                         )
                                     )
-                                ).astype("float64"),
-                            ).astype("float64")
+                                ),
+                            )
                         )
                         s2_is_valid = (
                             log_s2[i][m][t] >= np.log(setup.sd_lower[i] ** 2)

@@ -1,4 +1,6 @@
-# import multiprocessing as mp
+####################################
+"""Impala clustered calibration"""
+####################################
 import time
 from collections import namedtuple
 from math import sqrt
@@ -332,9 +334,7 @@ OutCalibClust = namedtuple(
 ### - estimation of separate s2 values within an experiment
 ### - passing indices to loglik
 ### - add truncated gibbs sampling for measurement errors
-def calibClust(
-    setup, parallel=False
-):  ## kw parallel is not used, but maybe keep for backwards compatibility?
+def calibClust(setup):
     """
     Clustered calibration with expanded capabilities, still undergoing testing.
     Some changes include:, allowing weights, allowing custom initializations, changing initial theta0 defaults,
@@ -378,7 +378,13 @@ def calibClust(
         good = setup.checkConstraints(
             tran_unif(theta0_start, setup.bounds_mat, setup.bounds.keys())
         )
+        maxiter=1000000
+        j = 0
         while np.any(np.logical_not(good)):
+            if j >= maxiter:
+                raise ValueError(
+                    f"Failed to find samples that fulfill the constraints after {maxiter} iterations."
+                )
             theta0_start[np.where(np.logical_not(good))] = initfunc_unif(
                 size=[(np.logical_not(good)).sum(), setup.p]
             )
@@ -389,6 +395,7 @@ def calibClust(
                     setup.bounds.keys(),
                 )
             )
+            j += 1
     theta0[0] = theta0_start
 
     s2_which_mat = [
@@ -858,8 +865,8 @@ def calibClust(
                         log_s2[i][m][t] >= np.log(setup.sd_lower[i] ** 2)
                     ) * (log_s2[i][m][t] <= np.log(setup.sd_upper[i] ** 2))
                     ct = 0
-                    while np.any(~s2_is_valid):
-                        sub = np.where(~s2_is_valid)
+                    while np.any(np.logical_not(s2_is_valid)):
+                        sub = np.where(np.logical_not(s2_is_valid))
                         log_s2[i][m][t][sub] = np.log(
                             1
                             / np.random.gamma(

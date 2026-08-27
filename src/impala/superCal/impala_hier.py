@@ -87,7 +87,13 @@ def calibHier(setup):
         good = setup.checkConstraints(
             tran_unif(theta0_start, setup.bounds_mat, setup.bounds.keys())
         )
+        maxiter=1000000
+        j = 0
         while np.any(np.logical_not(good)):
+            if j >= maxiter:
+                raise ValueError(
+                    f"Failed to find samples that fulfill the constraints after {maxiter} iterations."
+                )
             theta0_start[np.where(np.logical_not(good))] = initfunc_unif(
                 size=[(np.logical_not(good)).sum(), setup.p]
             )
@@ -98,6 +104,7 @@ def calibHier(setup):
                     setup.bounds.keys(),
                 )
             )
+            j += 1
     theta0[0] = theta0_start
     Sigma0[0] = setup.Sigma0_prior_scale / (
         setup.Sigma0_prior_df - setup.p - 1

@@ -49,7 +49,13 @@ def calibPool(setup):
     good = setup.checkConstraints(
         tran_unif(theta_start0, setup.bounds_mat, setup.bounds.keys())
     )
+    maxiter=1000000
+    j = 0
     while np.any(np.logical_not(good)):
+        if j >= maxiter:
+            raise ValueError(
+                f"Failed to find samples that fulfill the constraints after {maxiter} iterations."
+            )
         theta_start0[np.where(np.logical_not(good))] = initfunc_unif(
             size=[(np.logical_not(good)).sum(), setup.p]
         )
@@ -60,6 +66,7 @@ def calibPool(setup):
                 setup.bounds.keys(),
             )
         )
+        j += 1
     theta[0] = theta_start0
 
     s2_which_mat = [
@@ -382,8 +389,8 @@ def calibPool(setup):
                         log_s2[i][m][t] >= np.log(setup.sd_lower[i] ** 2)
                     ) * (log_s2[i][m][t] <= np.log(setup.sd_upper[i] ** 2))
                     ct = 0
-                    while np.any(~s2_is_valid):
-                        sub = np.where(~s2_is_valid)
+                    while np.anynp.logical_not(s2_is_valid):
+                        sub = np.where(np.logical_not(s2_is_valid))
                         log_s2[i][m][t][sub] = np.log(
                             1
                             / np.random.gamma(

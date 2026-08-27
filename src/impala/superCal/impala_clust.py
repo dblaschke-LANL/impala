@@ -1,5 +1,6 @@
 ####################################
 """Impala clustered calibration"""
+
 ####################################
 import time
 from collections import namedtuple
@@ -378,7 +379,7 @@ def calibClust(setup):
         good = setup.checkConstraints(
             tran_unif(theta0_start, setup.bounds_mat, setup.bounds.keys())
         )
-        maxiter=1000000
+        maxiter = 1000000
         j = 0
         while np.any(np.logical_not(good)):
             if j >= maxiter:

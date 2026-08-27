@@ -15,7 +15,12 @@ from multiprocessing import Pool
 import numpy as np
 from numpy.random import uniform
 
-from .impala_noprobit_emu import AMcov_pool, initfunc_unif, tran_unif, theta_log_prior
+from .impala_noprobit_emu import (
+    AMcov_pool,
+    initfunc_unif,
+    theta_log_prior,
+    tran_unif,
+)
 from .pbar import pbar
 
 np.seterr(under="ignore")
@@ -49,7 +54,7 @@ def calibPool(setup):
     good = setup.checkConstraints(
         tran_unif(theta_start0, setup.bounds_mat, setup.bounds.keys())
     )
-    maxiter=1000000
+    maxiter = 1000000
     j = 0
     while np.any(np.logical_not(good)):
         if j >= maxiter:

@@ -15,7 +15,7 @@ from multiprocessing import Pool
 import numpy as np
 from numpy.random import uniform
 
-from .impala_noprobit_emu import AMcov_pool, initfunc_unif, tran_unif
+from .impala_noprobit_emu import AMcov_pool, initfunc_unif, tran_unif, theta_log_prior
 from .pbar import pbar
 
 np.seterr(under="ignore")
@@ -120,6 +120,10 @@ def calibPool(setup):
                 setup.ys[i], pred_curr[i][t], marg_lik_cov_curr[i][t], wt_mat[i]
             )
 
+    # current log-prior for theta at each temperature (zeros if no prior set)
+    lpr_curr = theta_log_prior(setup, theta[0])
+    lpr_cand = lpr_curr.copy()
+
     # eps  = 1.0e-13
     # tau  = np.repeat(-4.0, setup.ntemps)
     # AM_const   = 2.4**2/setup.p
@@ -217,6 +221,7 @@ def calibPool(setup):
         # get predictions and SSE
         pred_cand = [_.copy() for _ in pred_curr]
         llik_cand[:] = llik_curr.copy()
+        lpr_cand = theta_log_prior(setup, theta_cand)
         if np.any(good_values):
             llik_cand[:, good_values] = 0.0
             for i in range(setup.nexp):
@@ -236,15 +241,17 @@ def calibPool(setup):
                         wt_mat[i],
                     )
 
-        llik_diff = (llik_cand.sum(axis=0) - llik_curr.sum(axis=0))[
-            good_values
-        ]  # sum over experiments
+        llik_diff = (
+            (llik_cand.sum(axis=0) + lpr_cand)
+            - (llik_curr.sum(axis=0) + lpr_curr)
+        )[good_values]  # sum over experiments
         # ------------------------------------------------------------------------------------------
         # for each temperature, accept or reject
         alpha[:] = -np.inf
         alpha[good_values] = setup.itl[good_values] * (llik_diff)
         for t in np.where(np.log(uniform(size=setup.ntemps)) < alpha)[0]:
             theta[m, t] = theta_cand[t].copy()
+            lpr_curr[t] = lpr_cand[t]
             count[t, t] += 1
             for i in range(setup.nexp):
                 llik_curr[i, t] = llik_cand[i, t].copy()
@@ -267,6 +274,7 @@ def calibPool(setup):
                 )
                 pred_cand = [_.copy() for _ in pred_curr]
                 llik_cand[:] = llik_curr.copy()
+                lpr_cand = theta_log_prior(setup, theta_cand)
 
                 if np.any(good_values):
                     llik_cand[:, good_values] = 0.0
@@ -291,9 +299,10 @@ def calibPool(setup):
 
                 alpha[:] = -np.inf
                 # tsq_diff = 0.#((theta_cand * theta_cand).sum(axis = 1) - (theta[m] * theta[m]).sum(axis = 1))[good_values]
-                llik_diff = (llik_cand.sum(axis=0) - llik_curr.sum(axis=0))[
-                    good_values
-                ]
+                llik_diff = (
+                    (llik_cand.sum(axis=0) + lpr_cand)
+                    - (llik_curr.sum(axis=0) + lpr_curr)
+                )[good_values]
                 alpha[good_values] = (
                     setup.itl[good_values] * (llik_diff)
                 )  # + tsq_diff) + 0.5 * tsq_diff # last is for proposal, since this is an independence sampler step
@@ -301,6 +310,7 @@ def calibPool(setup):
                     0
                 ]:
                     theta[m, t, k] = theta_cand[t, k].copy()
+                    lpr_curr[t] = lpr_cand[t]
                     count_decor[k, t] += 1
                     for i in range(setup.nexp):
                         pred_curr[i][t] = pred_cand[i][t].copy()
@@ -501,6 +511,9 @@ def calibPool(setup):
                     llik_curr[:, sw.T[0]].sum(axis=0)
                     - llik_curr[:, sw.T[1]].sum(axis=0)
                 )
+                sw_alpha += (setup.itl[sw.T[1]] - setup.itl[sw.T[0]]) * (
+                    lpr_curr[sw.T[0]] - lpr_curr[sw.T[1]]
+                )
                 for i in range(setup.nexp):
                     sw_alpha += (setup.itl[sw.T[1]] - setup.itl[sw.T[0]]) * (
                         setup.s2_prior_kern[i](
@@ -564,6 +577,10 @@ def calibPool(setup):
                     theta[m][tt[0]], theta[m][tt[1]] = (
                         theta[m][tt[1]].copy(),
                         theta[m][tt[0]].copy(),
+                    )
+                    lpr_curr[tt[0]], lpr_curr[tt[1]] = (
+                        lpr_curr[tt[1]],
+                        lpr_curr[tt[0]],
                     )
 
         llik[m] = llik_curr[:, 0].sum()

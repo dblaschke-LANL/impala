@@ -627,8 +627,10 @@ def calibPool(setup):
 
 
 class PoolCalib:
-    # adapted from https://stackoverflow.com/questions/1816958/cant-pickle-type-instancemethod-when-using-multiprocessing-pool-map/41959862#41959862 answer by parisjohn
-    # somewhat slow collection of results
+    """
+    adapted from https://stackoverflow.com/questions/1816958/cant-pickle-type-instancemethod-when-using-multiprocessing-pool-map/41959862#41959862 answer by parisjohn
+    somewhat slow collection of results
+    """
     def __init__(self, setup_list):
         self.setup_list = setup_list
 

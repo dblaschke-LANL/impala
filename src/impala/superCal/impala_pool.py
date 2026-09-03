@@ -183,9 +183,8 @@ def calibPool(setup):
 
     ## start MCMC
     for m in pbar(range(1, setup.nmcmc)):
-        theta[m] = theta[
-            m - 1
-        ].copy()  # current set to previous, will change if accepted
+        theta[m] = theta[m - 1].copy()
+        # current set to previous, will change if accepted
         for i in range(setup.nexp):
             log_s2[i][m] = log_s2[i][m - 1].copy()
             if setup.models[i].nd > 0:  # update discrepancy
@@ -630,6 +629,7 @@ class PoolCalib:
     adapted from https://stackoverflow.com/questions/1816958/cant-pickle-type-instancemethod-when-using-multiprocessing-pool-map/41959862#41959862 answer by parisjohn
     somewhat slow collection of results
     """
+
     def __init__(self, setup_list):
         self.setup_list = setup_list
 

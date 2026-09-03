@@ -284,7 +284,6 @@ def get_map_impalapool(
     else:
         raise ValueError("Invalid optmethod")
 
-
     if optmethod == "bh":
         res_trans0 = copy.deepcopy(res.x)
     elif optmethod == "pso":

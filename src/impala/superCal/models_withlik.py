@@ -545,7 +545,8 @@ class ModelBpprPca_mult(AbstractModel):
         """
         returns a dictionary containing the inverse of the covariance matrix and the log-determinant
         """
-        if inds is None: # TODO: test this. There may need to be changes to the inds-based subsetting!
+        # TODO: test this. There may need to be changes to the inds-based subsetting!
+        if inds is None:
             inds = np.arange(0, len(s2vec), 1)
         Sigma = cor2cov(
             self.meas_error_cor[inds, inds], np.sqrt(s2vec)

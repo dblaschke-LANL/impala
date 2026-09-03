@@ -496,7 +496,9 @@ class PTW_Plotter:
     def ptw_prediction_plots(self, path, mcmc_use=None):
         """PTW Prediction Plots against model"""
         if mcmc_use is None:
-            mcmc_use = np.arange(int(self.setup.nmcmc / 2), self.setup.nmcmc, 10)
+            mcmc_use = np.arange(
+                int(self.setup.nmcmc / 2), self.setup.nmcmc, 10
+            )
         if isinstance(self.out, sc.OutCalibPool):
             return self.ptw_prediction_plots_pool(path, sel=mcmc_use)
         if isinstance(self.out, sc.OutCalibHier):
@@ -535,9 +537,7 @@ class PTW_Plotter:
         theta0_unst = sc.unnormalize(
             self.out.theta0[sel, 0, :], self.setup.bounds_mat
         )
-        theta_parent_unst = sc.unnormalize(
-            theta_parent, self.setup.bounds_mat
-        )
+        theta_parent_unst = sc.unnormalize(theta_parent, self.setup.bounds_mat)
         theta_unst = [
             self.out.theta[k][sel, 0, :, :] for k in range(self.setup.nexp)
         ]
@@ -823,7 +823,9 @@ class PTW_Plotter:
     def pairwise_theta_plot(self, path=None, mcmc_use=None):
         """Pairwise Theta scatterplot"""
         if mcmc_use is None:
-            mcmc_use = np.arange(int(self.setup.nmcmc / 2), self.setup.nmcmc, 10)
+            mcmc_use = np.arange(
+                int(self.setup.nmcmc / 2), self.setup.nmcmc, 10
+            )
         if isinstance(self.out, sc.OutCalibPool):
             return self.pairwise_theta_plot_pool(path, sel=mcmc_use)
         if isinstance(self.out, sc.OutCalibHier):

@@ -58,7 +58,6 @@ class AbstractModel:
     @abc.abstractmethod
     def eval(self, parmat):
         """this must be implemented for each model type"""
-        pass
 
     # @profile
     def llik(self, yobs, pred, cov, wt):

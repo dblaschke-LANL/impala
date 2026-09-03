@@ -106,7 +106,7 @@ def calibPool(setup):
 
     pred_curr = [None] * setup.nexp
     # sse_curr = np.empty([setup.ntemps, setup.nexp])
-    llik_curr = np.empty([setup.nexp, setup.ntemps])
+    llik_curr = np.zeros([setup.nexp, setup.ntemps])
     # dev_sq = [np.empty((setup.ntemps, setup.ns2[i])) for i in range(setup.nexp)]
     marg_lik_cov_curr = [None] * setup.nexp
     for i in range(setup.nexp):
@@ -119,7 +119,6 @@ def calibPool(setup):
             )
             # ask around: is list of lists lookup slow?? ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    llik_curr[:] = 0.0
     for i in range(setup.nexp):
         pred_curr[i] = setup.models[i].eval(
             tran_unif(theta[0], setup.bounds_mat, setup.bounds.keys()),

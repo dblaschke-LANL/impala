@@ -22,7 +22,7 @@ class Diagnostics:
         self.setup = setup
         self.out = out
 
-    def pooled_trace_plots():
+    def pooled_trace_plots(self):
         pass
 
 
@@ -92,9 +92,12 @@ class PTW_Plotter:
         if pdf:
             pdf.savefig(fig)
 
-    def ptw_prediction_plots_hier(self, path, uu):
+    def ptw_prediction_plots_hier(self, path, uu=None):
         """PTW Prediction Hierarchical Plots (no input)"""
-        sel = uu  # np.arange(20000, self.setup.nmcmc, 10) # need to script this in
+        if uu is None:
+            sel = np.arange(int(self.setup.nmcmc / 2), self.setup.nmcmc, 10)
+        else:
+            sel = uu  # np.arange(20000, self.setup.nmcmc, 10) # need to script this in
         pred_theta_raw = [
             np.empty([sel.shape[0], self.setup.ys[i].shape[0]])
             for i in range(self.setup.nexp)
@@ -253,9 +256,12 @@ class PTW_Plotter:
                     self.ptw_prediction_plot_single(**plot_params, pdf=pdf)
         pdf.close()
 
-    def ptw_prediction_plots_pool(self, path, uu):
+    def ptw_prediction_plots_pool(self, path, uu=None):
         """PTW Prediction Hierarchical Plots (no input)"""
-        sel = uu  # np.arange(20000, self.setup.nmcmc, 10) # need to script this in
+        if uu is None:
+            sel = np.arange(int(self.setup.nmcmc / 2), self.setup.nmcmc, 10)
+        else:
+            sel = uu  # np.arange(20000, self.setup.nmcmc, 10) # need to script this in
         pred_theta_raw = [
             np.empty([sel.shape[0], self.setup.ys[i].shape[0]])
             for i in range(self.setup.nexp)
@@ -346,8 +352,12 @@ class PTW_Plotter:
                     self.ptw_prediction_plot_single(**plot_params, pdf=pdf)
         pdf.close()
 
-    def ptw_prediction_plots_cluster(self, path):
-        sel = np.arange(20000, self.setup.nmcmc, 10)  # need to script this in
+    def ptw_prediction_plots_cluster(self, path, uu=None):
+        """PTW Prediction Clustered Plots (no input)"""
+        if uu is None:
+            sel = np.arange(int(self.setup.nmcmc / 2), self.setup.nmcmc, 10)
+        else:
+            sel = uu  # need to script this in
         pred_theta_raw = [
             np.empty([sel.shape[0], self.setup.ys[i].shape[0]])
             for i in range(self.setup.nexp)
@@ -362,7 +372,7 @@ class PTW_Plotter:
         ]
 
         thetas = self.out.theta[sel, 0]
-        [self.out.delta[i][sel] for i in range(self.setup.nexp)]
+        # [self.out.delta[i][sel] for i in range(self.setup.nexp)]
         nclustmax = (
             max(self.out.delta[i].max() for i in range(self.setup.nexp)) + 1
         )
@@ -495,17 +505,15 @@ class PTW_Plotter:
             self.ptw_prediction_plot_single(**plot_params, pdf=pdf)
         pdf.close()
 
-    def ptw_prediction_plots(self, path):
+    def ptw_prediction_plots(self, path, uu=None):
         """PTW Prediction Plots against model"""
-        if type(self.out) is impala.OutCalibPool:
-            return self.ptw_prediction_plots_pool(path)
-        elif type(self.out) is impala.OutCalibHier:
-            return self.ptw_prediction_plots_hier(path)
-        elif type(self.out) is impala.OutCalibClust:
-            return self.ptw_prediction_plots_cluster(path)
-        else:
-            raise ValueError("Improper out type")
-        return
+        if isinstance(self.out, sc.OutCalibPool):
+            return self.ptw_prediction_plots_pool(path, uu=uu)
+        if isinstance(self.out, sc.OutCalibHier):
+            return self.ptw_prediction_plots_hier(path, uu=uu)
+        if isinstance(self.out, sc.OutCalibClust):
+            return self.ptw_prediction_plots_cluster(path, uu=uu)
+        raise ValueError("Improper out type")
 
     @staticmethod
     def kde_contour(x1, x2, percentile):
@@ -520,13 +528,16 @@ class PTW_Plotter:
         t_contours = f(np.array([percentile]))
         return {"X": X, "Y": Y, "Z": Z.reshape([100, 100]), "conts": t_contours}
 
-    def pairwise_theta_plot_hier(self, path, uu, highlight=None):
-        """Pairwise Theta scatterplot"""
+    def pairwise_theta_plot_hier(self, path=None, uu=None, highlight=None):
+        """Pairwise Theta scatterplot; specialized version for hierarchical calibration results."""
         if highlight is None:
             highlight = [
                 range(self.setup.ntheta[k]) for k in range(self.setup.nexp)
             ]
-        sel = uu  # np.arange(20000, self.setup.nmcmc, 10)
+        if uu is None:
+            sel = np.arange(int(self.setup.nmcmc / 2), self.setup.nmcmc, 10)
+        else:
+            sel = uu
         theta_parent = impala.chol_sample_1per_constraints(
             self.out.theta0[sel, 0],
             self.out.Sigma0[sel, 0],
@@ -644,8 +655,12 @@ class PTW_Plotter:
         else:
             plt.show()
 
-    def pairwise_theta_plot_pool(self, path, uu):
-        sel = uu  # np.arange(20000, self.setup.nmcmc, 10)
+    def pairwise_theta_plot_pool(self, path=None, uu=None):
+        """Pairwise Theta scatterplot; specialized version for pooled calibration results."""
+        if uu is None:
+            sel = np.arange(int(self.setup.nmcmc / 2), self.setup.nmcmc, 10)
+        else:
+            sel = uu
         plt.figure(figsize=(15, 15))
         for i in range(self.setup.p):
             for j in range(self.setup.p):
@@ -694,10 +709,14 @@ class PTW_Plotter:
         else:
             plt.show()
 
-    def pairwise_theta_plot_cluster(self, path=None):
-        sel = np.arange(20000, self.setup.nmcmc, 10)
+    def pairwise_theta_plot_cluster(self, path=None, uu=None):
+        """Pairwise Theta scatterplot; specialized version for clustered calibration results."""
+        if uu is None:
+            sel = np.arange(int(self.setup.nmcmc / 2), self.setup.nmcmc, 10)
+        else:
+            sel = uu
         thetas = self.out.theta[sel, 0]
-        [self.out.delta[i][sel] for i in range(self.setup.nexp)]
+        # [self.out.delta[i][sel] for i in range(self.setup.nexp)]
         nclustmax = (
             max(self.out.delta[i].max() for i in range(self.setup.nexp)) + 1
         )
@@ -823,24 +842,23 @@ class PTW_Plotter:
         else:
             plt.show()
 
-    def pairwise_theta_plot(self, path=None):
-        if type(self.out) is impala.OutCalibPool:
-            return self.pairwise_theta_plot_pool(path)
-        elif type(self.out) is impala.OutCalibHier:
-            return self.pairwise_theta_plot_hier(path)
-        elif type(self.out) is impala.OutCalibClust:
-            return self.pairwise_theta_plot_cluster(path)
-        else:
-            raise ValueError("Improper out type")
-        return
+    def pairwise_theta_plot(self, path=None, uu=None):
+        """Pairwise Theta scatterplot"""
+        if isinstance(self.out, sc.OutCalibPool):
+            return self.pairwise_theta_plot_pool(path, uu=uu)
+        if isinstance(self.out, sc.OutCalibHier):
+            return self.pairwise_theta_plot_hier(path, uu=uu)
+        if isinstance(self.out, sc.OutCalibClust):
+            return self.pairwise_theta_plot_cluster(path, uu=uu)
+        raise ValueError("Improper out type")
 
     @staticmethod
     def cluster_matrix(delta_list, ns2, nclustmax, nburn=20000, nthin=10):
         # subset delta to post burn-in
         delta_relist = [d[nburn::nthin] for d in delta_list]
         # Declare constants
-        delta_relist[0].shape[0]
-        len(delta_relist)
+        # delta_relist[0].shape[0]
+        # len(delta_relist)
         # create a combined delta array (for all experiments/vectorized experiments)
         # Boolean array, so (True iff member of cluster)
         breaks = np.hstack((0, np.cumsum(ns2)))
@@ -866,9 +884,9 @@ class PTW_Plotter:
         )
         plt.matshow(cmat)
         if breaks.shape[0] > 1:
-            for breakpoint in breaks[1:-1] - 0.5:
-                plt.axhline(breakpoint, color="red", linestyle="--")
-                plt.axvline(breakpoint, color="green", linestyle="--")
+            for breakpnt in breaks[1:-1] - 0.5:
+                plt.axhline(breakpnt, color="red", linestyle="--")
+                plt.axvline(breakpnt, color="green", linestyle="--")
         plt.legend()
         if path:
             plt.savefig(path, bbox_inches="tight")

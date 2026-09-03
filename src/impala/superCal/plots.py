@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 
-import impala.superCal as impala
+import impala.superCal as sc
 
 plt.rcParams.update({"figure.max_open_warning": 0})
 from matplotlib.backends.backend_pdf import PdfPages
@@ -92,12 +92,8 @@ class PTW_Plotter:
         if pdf:
             pdf.savefig(fig)
 
-    def ptw_prediction_plots_hier(self, path, uu=None):
+    def ptw_prediction_plots_hier(self, path, sel):
         """PTW Prediction Hierarchical Plots (no input)"""
-        if uu is None:
-            sel = np.arange(int(self.setup.nmcmc / 2), self.setup.nmcmc, 10)
-        else:
-            sel = uu  # np.arange(20000, self.setup.nmcmc, 10) # need to script this in
         pred_theta_raw = [
             np.empty([sel.shape[0], self.setup.ys[i].shape[0]])
             for i in range(self.setup.nexp)
@@ -111,7 +107,7 @@ class PTW_Plotter:
             for i in range(self.setup.nexp)
         ]
 
-        theta_parent = impala.chol_sample_1per_constraints(
+        theta_parent = sc.chol_sample_1per_constraints(
             self.out.theta0[sel, 0],
             self.out.Sigma0[sel, 0],
             self.setup.checkConstraints,
@@ -122,7 +118,7 @@ class PTW_Plotter:
         for i in range(self.setup.nexp):
             self.setup.models[i].pool = False
             pred_theta_raw[i] = self.setup.models[i].eval(
-                impala.tran_unif(
+                sc.tran_unif(
                     self.out.theta[i][sel, 0, :, :].reshape([-1, self.setup.p]),
                     self.setup.bounds_mat,
                     self.setup.bounds.keys(),
@@ -131,7 +127,7 @@ class PTW_Plotter:
                 nugget=True,
             )
             pred_theta0_raw[i] = self.setup.models[i].eval(
-                impala.tran_unif(
+                sc.tran_unif(
                     self.out.theta0[sel, 0],
                     self.setup.bounds_mat,
                     self.setup.bounds.keys(),
@@ -140,7 +136,7 @@ class PTW_Plotter:
                 nugget=True,
             )
             pred_thetap_raw[i] = self.setup.models[i].eval(
-                impala.tran_unif(
+                sc.tran_unif(
                     theta_parent,
                     self.setup.bounds_mat,
                     self.setup.bounds.keys(),
@@ -256,19 +252,15 @@ class PTW_Plotter:
                     self.ptw_prediction_plot_single(**plot_params, pdf=pdf)
         pdf.close()
 
-    def ptw_prediction_plots_pool(self, path, uu=None):
+    def ptw_prediction_plots_pool(self, path, sel):
         """PTW Prediction Hierarchical Plots (no input)"""
-        if uu is None:
-            sel = np.arange(int(self.setup.nmcmc / 2), self.setup.nmcmc, 10)
-        else:
-            sel = uu  # np.arange(20000, self.setup.nmcmc, 10) # need to script this in
         pred_theta_raw = [
             np.empty([sel.shape[0], self.setup.ys[i].shape[0]])
             for i in range(self.setup.nexp)
         ]
         for i in range(self.setup.nexp):
             pred_theta_raw[i] = self.setup.models[i].eval(
-                impala.tran_probit(
+                sc.tran_probit(
                     self.out.theta[
                         sel, 0
                     ],  # .repeat(self.setup.ns2[i], axis = 0),
@@ -352,12 +344,8 @@ class PTW_Plotter:
                     self.ptw_prediction_plot_single(**plot_params, pdf=pdf)
         pdf.close()
 
-    def ptw_prediction_plots_cluster(self, path, uu=None):
+    def ptw_prediction_plots_cluster(self, path, sel):
         """PTW Prediction Clustered Plots (no input)"""
-        if uu is None:
-            sel = np.arange(int(self.setup.nmcmc / 2), self.setup.nmcmc, 10)
-        else:
-            sel = uu  # need to script this in
         pred_theta_raw = [
             np.empty([sel.shape[0], self.setup.ys[i].shape[0]])
             for i in range(self.setup.nexp)
@@ -395,14 +383,14 @@ class PTW_Plotter:
         for i in range(self.setup.nexp):
             for j in range(sel.shape[0]):
                 pred_theta_raw[i][j] = self.setup.models[i].eval(
-                    impala.tran_unif(
+                    sc.tran_unif(
                         self.out.theta_hist[i][sel[j], 0],
                         self.setup.bounds_mat,
                         self.setup.bounds.keys(),
                     ),
                 )
                 pred_theta0_raw[i][j] = self.setup.models[i].eval(
-                    impala.tran_unif(
+                    sc.tran_unif(
                         np.repeat(
                             self.out.theta0[sel[j], 0].reshape(1, -1),
                             self.setup.ns2[i],
@@ -413,7 +401,7 @@ class PTW_Plotter:
                     ),
                 )
                 pred_thetap_raw[i][j] = self.setup.models[i].eval(
-                    impala.tran_unif(
+                    sc.tran_unif(
                         np.repeat(
                             theta_parent[j].reshape(1, -1),
                             self.setup.ns2[i],
@@ -505,14 +493,16 @@ class PTW_Plotter:
             self.ptw_prediction_plot_single(**plot_params, pdf=pdf)
         pdf.close()
 
-    def ptw_prediction_plots(self, path, uu=None):
+    def ptw_prediction_plots(self, path, mcmc_use=None):
         """PTW Prediction Plots against model"""
+        if mcmc_use is None:
+            mcmc_use = np.arange(int(self.setup.nmcmc / 2), self.setup.nmcmc, 10)
         if isinstance(self.out, sc.OutCalibPool):
-            return self.ptw_prediction_plots_pool(path, uu=uu)
+            return self.ptw_prediction_plots_pool(path, sel=mcmc_use)
         if isinstance(self.out, sc.OutCalibHier):
-            return self.ptw_prediction_plots_hier(path, uu=uu)
+            return self.ptw_prediction_plots_hier(path, sel=mcmc_use)
         if isinstance(self.out, sc.OutCalibClust):
-            return self.ptw_prediction_plots_cluster(path, uu=uu)
+            return self.ptw_prediction_plots_cluster(path, sel=mcmc_use)
         raise ValueError("Improper out type")
 
     @staticmethod
@@ -528,17 +518,13 @@ class PTW_Plotter:
         t_contours = f(np.array([percentile]))
         return {"X": X, "Y": Y, "Z": Z.reshape([100, 100]), "conts": t_contours}
 
-    def pairwise_theta_plot_hier(self, path=None, uu=None, highlight=None):
+    def pairwise_theta_plot_hier(self, path, sel, highlight=None):
         """Pairwise Theta scatterplot; specialized version for hierarchical calibration results."""
         if highlight is None:
             highlight = [
                 range(self.setup.ntheta[k]) for k in range(self.setup.nexp)
             ]
-        if uu is None:
-            sel = np.arange(int(self.setup.nmcmc / 2), self.setup.nmcmc, 10)
-        else:
-            sel = uu
-        theta_parent = impala.chol_sample_1per_constraints(
+        theta_parent = sc.chol_sample_1per_constraints(
             self.out.theta0[sel, 0],
             self.out.Sigma0[sel, 0],
             self.setup.checkConstraints,
@@ -546,10 +532,10 @@ class PTW_Plotter:
             self.setup.constants,
         )
         theta_names = list(self.setup.bounds.keys())
-        theta0_unst = impala.unnormalize(
+        theta0_unst = sc.unnormalize(
             self.out.theta0[sel, 0, :], self.setup.bounds_mat
         )
-        theta_parent_unst = impala.unnormalize(
+        theta_parent_unst = sc.unnormalize(
             theta_parent, self.setup.bounds_mat
         )
         theta_unst = [
@@ -557,7 +543,7 @@ class PTW_Plotter:
         ]
         for k in range(self.setup.nexp):
             for s in range(self.setup.ntheta[k]):
-                theta_unst[k][:, s, :] = impala.unnormalize(
+                theta_unst[k][:, s, :] = sc.unnormalize(
                     self.out.theta[k][sel, 0, s, :], self.setup.bounds_mat
                 )
         plt.figure(figsize=(15, 15))
@@ -655,19 +641,15 @@ class PTW_Plotter:
         else:
             plt.show()
 
-    def pairwise_theta_plot_pool(self, path=None, uu=None):
+    def pairwise_theta_plot_pool(self, path, sel):
         """Pairwise Theta scatterplot; specialized version for pooled calibration results."""
-        if uu is None:
-            sel = np.arange(int(self.setup.nmcmc / 2), self.setup.nmcmc, 10)
-        else:
-            sel = uu
         plt.figure(figsize=(15, 15))
         for i in range(self.setup.p):
             for j in range(self.setup.p):
                 if i == j:
                     plt.subplot2grid((self.setup.p, self.setup.p), (i, j))
                     sns.distplot(
-                        impala.invprobit(self.out.theta[sel, 0, i]),
+                        sc.invprobit(self.out.theta[sel, 0, i]),
                         hist=False,
                         kde=True,
                         color="blue",
@@ -684,8 +666,8 @@ class PTW_Plotter:
                 elif i < j:
                     plt.subplot2grid((self.setup.p, self.setup.p), (i, j))
                     contour = self.kde_contour(
-                        impala.invprobit(self.out.theta[sel, 0, j]),
-                        impala.invprobit(self.out.theta[sel, 0, i]),
+                        sc.invprobit(self.out.theta[sel, 0, j]),
+                        sc.invprobit(self.out.theta[sel, 0, i]),
                         0.9,
                     )
                     plt.contour(
@@ -709,12 +691,8 @@ class PTW_Plotter:
         else:
             plt.show()
 
-    def pairwise_theta_plot_cluster(self, path=None, uu=None):
+    def pairwise_theta_plot_cluster(self, path, sel):
         """Pairwise Theta scatterplot; specialized version for clustered calibration results."""
-        if uu is None:
-            sel = np.arange(int(self.setup.nmcmc / 2), self.setup.nmcmc, 10)
-        else:
-            sel = uu
         thetas = self.out.theta[sel, 0]
         # [self.out.delta[i][sel] for i in range(self.setup.nexp)]
         nclustmax = (
@@ -744,7 +722,7 @@ class PTW_Plotter:
                     for k in range(self.setup.nexp):
                         for s in range(self.setup.ns2[k]):
                             sns.distplot(
-                                impala.invprobit(
+                                sc.invprobit(
                                     self.out.theta_hist[k][sel, 0, s, i]
                                 ),
                                 hist=False,
@@ -752,13 +730,13 @@ class PTW_Plotter:
                                 color="lightgreen",
                             )
                     sns.distplot(
-                        impala.invprobit(self.out.theta0[sel, 0, i]),
+                        sc.invprobit(self.out.theta0[sel, 0, i]),
                         hist=False,
                         kde=True,
                         color="blue",
                     )
                     sns.distplot(
-                        impala.invprobit(theta_parent[:, i]),
+                        sc.invprobit(theta_parent[:, i]),
                         hist=False,
                         kde=True,
                         color="grey",
@@ -777,10 +755,10 @@ class PTW_Plotter:
                     for k in range(self.setup.nexp):
                         for s in range(self.setup.ns2[k]):
                             contour = self.kde_contour(
-                                impala.invprobit(
+                                sc.invprobit(
                                     self.out.theta_hist[k][sel, 0, s, j]
                                 ),
-                                impala.invprobit(
+                                sc.invprobit(
                                     self.out.theta_hist[k][sel, 0, s, i]
                                 ),
                                 0.9,
@@ -793,8 +771,8 @@ class PTW_Plotter:
                                 colors="lightgreen",
                             )
                     contour = self.kde_contour(
-                        impala.invprobit(self.out.theta0[sel, 0, j]),
-                        impala.invprobit(self.out.theta0[sel, 0, i]),
+                        sc.invprobit(self.out.theta0[sel, 0, j]),
+                        sc.invprobit(self.out.theta0[sel, 0, i]),
                         0.9,
                     )
                     plt.contour(
@@ -806,8 +784,8 @@ class PTW_Plotter:
                     )
 
                     contour = self.kde_contour(
-                        impala.invprobit(theta_parent[:, j]),
-                        impala.invprobit(theta_parent[:, i]),
+                        sc.invprobit(theta_parent[:, j]),
+                        sc.invprobit(theta_parent[:, i]),
                         0.9,
                     )
                     plt.contour(
@@ -842,14 +820,16 @@ class PTW_Plotter:
         else:
             plt.show()
 
-    def pairwise_theta_plot(self, path=None, uu=None):
+    def pairwise_theta_plot(self, path=None, mcmc_use=None):
         """Pairwise Theta scatterplot"""
+        if mcmc_use is None:
+            mcmc_use = np.arange(int(self.setup.nmcmc / 2), self.setup.nmcmc, 10)
         if isinstance(self.out, sc.OutCalibPool):
-            return self.pairwise_theta_plot_pool(path, uu=uu)
+            return self.pairwise_theta_plot_pool(path, sel=mcmc_use)
         if isinstance(self.out, sc.OutCalibHier):
-            return self.pairwise_theta_plot_hier(path, uu=uu)
+            return self.pairwise_theta_plot_hier(path, sel=mcmc_use)
         if isinstance(self.out, sc.OutCalibClust):
-            return self.pairwise_theta_plot_cluster(path, uu=uu)
+            return self.pairwise_theta_plot_cluster(path, sel=mcmc_use)
         raise ValueError("Improper out type")
 
     @staticmethod

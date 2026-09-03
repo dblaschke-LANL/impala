@@ -648,10 +648,8 @@ class PTW_Plotter:
             for j in range(self.setup.p):
                 if i == j:
                     plt.subplot2grid((self.setup.p, self.setup.p), (i, j))
-                    sns.distplot(
+                    sns.kdeplot(
                         sc.invprobit(self.out.theta[sel, 0, i]),
-                        hist=False,
-                        kde=True,
                         color="blue",
                     )
                     plt.xlim(0, 1)
@@ -721,24 +719,18 @@ class PTW_Plotter:
                     plt.subplot2grid((self.setup.p, self.setup.p), (i, j))
                     for k in range(self.setup.nexp):
                         for s in range(self.setup.ns2[k]):
-                            sns.distplot(
+                            sns.kdeplot(
                                 sc.invprobit(
                                     self.out.theta_hist[k][sel, 0, s, i]
                                 ),
-                                hist=False,
-                                kde=True,
                                 color="lightgreen",
                             )
-                    sns.distplot(
+                    sns.kdeplot(
                         sc.invprobit(self.out.theta0[sel, 0, i]),
-                        hist=False,
-                        kde=True,
                         color="blue",
                     )
-                    sns.distplot(
+                    sns.kdeplot(
                         sc.invprobit(theta_parent[:, i]),
-                        hist=False,
-                        kde=True,
                         color="grey",
                     )
                     plt.xlim(0, 1)
@@ -811,7 +803,7 @@ class PTW_Plotter:
         plt.axis("off")
         try:
             plt.subplot2grid((self.setup.p, self.setup.p), (4, 0))
-            sns.distplot(nclust, kde=True, color="blue")
+            sns.histplot(nclust, kde=True, color="blue")
             plt.xlim(0, nclustmax)
         except IndexError:
             pass

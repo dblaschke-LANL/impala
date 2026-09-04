@@ -17,6 +17,7 @@ from scipy.interpolate import interp1d
 from scipy.linalg import cho_factor, cholesky
 
 from .. import physics as pm_vec
+from .impala_noprobit_emu import chol_sample
 
 try:
     import fdasrsf as fs
@@ -30,14 +31,12 @@ except ImportError:
 ########################
 
 
-def cor2cov(R, s):  # R is correlation matrix, s is sd vector
+def cor2cov(R, s):
+    """
+    Returns the covariance matrix.
+    R is the correlation matrix, s is the standard deviation vector.
+    """
     return np.outer(s, s) * R
-
-
-def chol_sample(mean, cov):
-    return mean + np.dot(
-        np.linalg.cholesky(cov), np.random.standard_normal(mean.size)
-    )
 
 
 #####################

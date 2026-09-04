@@ -345,7 +345,7 @@ class PTW_Plotter:
         pdf.close()
 
     def ptw_prediction_plots_cluster(self, path, sel):
-        """PTW Prediction Clustered Plots (no input)"""
+        """PTW Prediction Clustered Plots"""
         pred_theta_raw = [
             np.empty([sel.shape[0], self.setup.ys[i].shape[0]])
             for i in range(self.setup.nexp)

@@ -18,19 +18,103 @@ from numpy.random import uniform
 from scipy.stats import invwishart
 
 from .impala_noprobit_emu import (
-    AMcov_hier,
-    AMcov_pool,
+    chol_sample_1per,
     chol_sample_1per_constraints,
     chol_sample_nper_constraints,
+    cov_4d_pcm,
     initfunc_unif,
     invwishart_logpdf,
     mvnorm_logpdf,
     mvnorm_logpdf_,
     tran_unif,
 )
+from .impala_pool import AMcov_pool
 from .pbar import pbar
 
 np.seterr(under="ignore")
+
+
+class AMcov_hier:
+    """
+    Stores and updates the covariance matrix for Adaptive Metropolis
+    for a hierarchical calibration
+    """
+
+    def __init__(
+        self,
+        nexp,
+        ntheta,
+        ntemps,
+        p,
+        start_var=1e-4,
+        start_adapt_iter=300,
+        tau_start=0.0,
+    ):  # ntheta is a vector of length nexp
+        self.eps = 1.0e-12
+        self.AM_SCALAR = 2.4**2 / p
+        self.tau = [
+            tau_start * np.ones((ntemps, ntheta[i])) for i in range(nexp)
+        ]
+        self.S = [np.empty((ntemps, ntheta[i], p, p)) for i in range(nexp)]
+        for i in range(nexp):
+            self.S[i][:] = np.eye(p) * start_var
+        self.cov = [np.empty((ntemps, ntheta[i], p, p)) for i in range(nexp)]
+        self.mu = [np.empty((ntemps, ntheta[i], p)) for i in range(nexp)]
+        self.nexp = nexp
+        self.ntemps = ntemps
+        self.p = p
+        self.start_adapt_iter = start_adapt_iter
+        self.count_100 = [np.zeros((ntemps, ntheta[i])) for i in range(nexp)]
+
+    def update(self, x, m):
+        """
+        updates the covariance of the previous MCMC samples;
+        called in m-th iteration, so latest value is x[i][m-1]
+        """
+        if m > self.start_adapt_iter:
+            for i in range(self.nexp):
+                self.mu[i] += (x[i][m - 1] - self.mu[i]) / m
+                self.cov[i][:] = +((m - 1) / m) * self.cov[i] + (
+                    (m - 1) / (m * m)
+                ) * np.einsum(
+                    "tej,tel->tejl",
+                    x[i][m - 1] - self.mu[i],
+                    x[i][m - 1] - self.mu[i],
+                )
+                self.S[i] = self.AM_SCALAR * np.einsum(
+                    "tejl,te->tejl",
+                    self.cov[i] + np.eye(self.p) * self.eps,
+                    np.exp(self.tau[i]),
+                )
+
+        elif m == self.start_adapt_iter:
+            for i in range(self.nexp):
+                self.mu[i][:] = x[i][:m].mean(axis=0)
+                # self.mu[i][:]  = x[i].mean(axis = 0)
+                self.cov[i][:] = cov_4d_pcm(x[i][:m], self.mu[i])
+                self.S[i][:] = self.AM_SCALAR * np.einsum(
+                    "tejl,te->tejl",
+                    self.cov[i] + np.eye(self.p) * self.eps,
+                    np.exp(self.tau[i]),
+                )
+
+    def update_tau(self, m):
+        """
+        diminishing adaptation based on acceptance rate for each temperature
+        """
+        if (m % 100 == 0) and (m > self.start_adapt_iter):
+            delta = min(0.5, 5 / np.sqrt(m + 1))
+            for i in range(self.nexp):
+                self.tau[i][self.count_100[i] < 23] -= delta
+                self.tau[i][self.count_100[i] > 23] += delta
+                self.count_100[i] *= 0
+
+    def gen_cand(self, x, m):
+        """generate a candidate"""
+        x_cand = [
+            chol_sample_1per(x[i][m - 1], self.S[i]) for i in range(self.nexp)
+        ]
+        return x_cand
 
 
 OutCalibHier = namedtuple(
@@ -445,8 +529,8 @@ def calibHier(setup):
                     ) * (log_s2[i][m][t] <= np.log(setup.sd_upper[i] ** 2))
 
                     ct = 0
-                    while np.any(~s2_is_valid):
-                        sub = np.where(~s2_is_valid)
+                    while np.any(np.logical_not(s2_is_valid)):
+                        sub = np.where(np.logical_not(s2_is_valid))
                         log_s2[i][m][t][sub] = np.log(
                             1
                             / np.random.gamma(
@@ -638,8 +722,7 @@ def calibHier(setup):
                 good_values_theta0 = setup.checkConstraints(
                     tran_unif(
                         theta0_cand, setup.bounds_mat, setup.bounds.keys()
-                    ),
-                    setup.bounds,
+                    )
                 )
                 for i in range(setup.nexp):
                     # Find new candidate values for theta

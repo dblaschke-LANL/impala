@@ -10,13 +10,15 @@
 
 import time
 from collections import namedtuple
+from math import sqrt
 from multiprocessing import Pool
 
 import numpy as np
-from numpy.random import uniform
+from numpy.linalg import cholesky
+from numpy.random import normal, uniform
 
 from .impala_noprobit_emu import (
-    AMcov_pool,
+    cov_3d_pcm,
     initfunc_unif,
     theta_log_prior,
     tran_unif,
@@ -24,6 +26,77 @@ from .impala_noprobit_emu import (
 from .pbar import pbar
 
 np.seterr(under="ignore")
+
+
+class AMcov_pool:
+    """
+    Stores and updates the covariance matrix for Adaptive Metropolis
+    for a pooled calibration
+    """
+
+    def __init__(
+        self, ntemps, p, start_var=1e-4, start_adapt_iter=300, tau_start=0.0
+    ):
+        self.eps = 1.0e-12
+        self.AM_SCALAR = 2.4**2 / p
+        self.tau = np.repeat(tau_start, ntemps)
+        self.S = np.empty([ntemps, p, p])
+        self.S[:] = np.eye(p) * start_var
+        self.cov = np.empty([ntemps, p, p])
+        self.mu = np.empty([ntemps, p])
+        self.ntemps = ntemps
+        self.p = p
+        self.start_adapt_iter = start_adapt_iter
+        self.count_100 = np.zeros(ntemps, dtype=int)
+
+    def update(self, x, m):
+        """
+        updates the covariance of the previous MCMC samples;
+        called in m-th iteration, so latest value is x[m-1]
+        """
+        if m > self.start_adapt_iter:
+            self.mu += (x[m - 1] - self.mu) / m
+            self.cov = +((m - 1) / m) * self.cov + (
+                (m - 1) / (m * m)
+            ) * np.einsum("ti,tj->tij", x[m - 1] - self.mu, x[m - 1] - self.mu)
+            self.S = self.AM_SCALAR * np.einsum(
+                "ijk,i->ijk",
+                self.cov + np.eye(self.p) * self.eps,
+                np.exp(self.tau),
+            )
+            # S   = cc * np.einsum('ijk,i->ijk', cov_3d_pcm(theta[:m], theta[:m].mean(axis = 0)) + np.eye(setup.p) * eps, np.exp(tau))
+
+        elif m == self.start_adapt_iter:
+            self.mu = x[:m].mean(axis=0)
+            self.cov = cov_3d_pcm(x[:m], self.mu)
+            self.S = self.AM_SCALAR * np.einsum(
+                "ijk,i->ijk",
+                self.cov + np.eye(self.p) * self.eps,
+                np.exp(self.tau),
+            )
+
+    def update_tau(self, m):
+        """
+        diminishing adaptation based on acceptance rate for each temperature
+        """
+        if (m % 100 == 0) and (m > self.start_adapt_iter):
+            delta = min(0.5, 5 / sqrt(m + 1))
+            self.tau[np.where(self.count_100 < 23)] = (
+                self.tau[np.where(self.count_100 < 23)] - delta
+            )
+            self.tau[np.where(self.count_100 > 23)] = (
+                self.tau[np.where(self.count_100 > 23)] + delta
+            )
+            self.count_100 *= 0
+            # note, e^tau scales whole covariance matrix, so it shrinks covariance for inert inputs too much...need decor for those.
+
+    def gen_cand(self, x, m):
+        """generate a candidate"""
+        x_cand = +x[m - 1] + np.einsum(
+            "ijk,ik->ij", cholesky(self.S), normal(size=(self.ntemps, self.p))
+        )
+        return x_cand
+
 
 OutCalibPool = namedtuple(
     "OutCalibPool",
@@ -412,7 +485,7 @@ def calibPool(setup):
                         log_s2[i][m][t] >= np.log(setup.sd_lower[i] ** 2)
                     ) * (log_s2[i][m][t] <= np.log(setup.sd_upper[i] ** 2))
                     ct = 0
-                    while np.anynp.logical_not(s2_is_valid):
+                    while np.any(np.logical_not(s2_is_valid)):
                         sub = np.where(np.logical_not(s2_is_valid))
                         log_s2[i][m][t][sub] = np.log(
                             1

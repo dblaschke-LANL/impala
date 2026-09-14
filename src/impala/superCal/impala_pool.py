@@ -28,6 +28,12 @@ from .pbar import pbar
 np.seterr(under="ignore")
 
 
+OutCalibPool = namedtuple(
+    "OutCalibPool",
+    "theta s2 count count_s2 count_decor cov_theta_cand cov_ls2_cand pred_curr discrep_vars llik theta_native",
+)
+
+
 class AMcov_pool:
     """
     Stores and updates the covariance matrix for Adaptive Metropolis
@@ -96,12 +102,6 @@ class AMcov_pool:
             "ijk,ik->ij", cholesky(self.S), normal(size=(self.ntemps, self.p))
         )
         return x_cand
-
-
-OutCalibPool = namedtuple(
-    "OutCalibPool",
-    "theta s2 count count_s2 count_decor cov_theta_cand cov_ls2_cand pred_curr discrep_vars llik theta_native",
-)
 
 
 # @profile

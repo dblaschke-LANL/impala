@@ -34,6 +34,12 @@ from .pbar import pbar
 np.seterr(under="ignore")
 
 
+OutCalibHier = namedtuple(
+    "OutCalibHier",
+    "theta s2 count count_s2 count_decor2 cov_theta_cand cov_ls2_cand count_temper pred_curr theta0 Sigma0",  # llik theta_native theta0_native theta_parent_native',
+)
+
+
 class AMcov_hier:
     """
     Stores and updates the covariance matrix for Adaptive Metropolis
@@ -115,12 +121,6 @@ class AMcov_hier:
             chol_sample_1per(x[i][m - 1], self.S[i]) for i in range(self.nexp)
         ]
         return x_cand
-
-
-OutCalibHier = namedtuple(
-    "OutCalibHier",
-    "theta s2 count count_s2 count_decor2 cov_theta_cand cov_ls2_cand count_temper pred_curr theta0 Sigma0",  # llik theta_native theta0_native theta_parent_native',
-)
 
 
 # @profile
